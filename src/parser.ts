@@ -153,7 +153,7 @@ export function parse (input: string) {
     )
 
     if (!elementNode.value) {
-      return null
+      throw new Error(`Invalid token: ${current()}`)
     }
 
     return elementNode
@@ -166,30 +166,17 @@ export function parse (input: string) {
 
     const elements: AstElementNode[] = []
 
-    do {
-      // Skip leading format-padding whitespaces
+    while (
+      current() &&
+      current() !== Token.arrayEndToken
+    ) {
+      elements.push(parseElement())
+
+      // Skip trailing format-padding whitespaces
       skipWhitespaces()
+    }
 
-      const element = parseElement()
-
-      if (!element) {
-        // Skip trailing format-padding whitespaces
-        skipWhitespaces()
-
-        if (current() !== Token.arrayEndToken) {
-          throw new Error(`Expecting closing object but got: ${current()}`)
-        }
-
-        // Skip `]` token
-        next()
-        break
-      }
-
-      elements.push(element)
-    } while (current())
-
-    // Skip end `]` token
-    next()
+    expectAndSkip(Token.arrayEndToken)
 
     return {
       type: 'array',
@@ -204,27 +191,17 @@ export function parse (input: string) {
 
     const pairs: AstPairNode[] = []
 
-    do {
-      // Skip leading format-padding whitespaces
+    while (
+      current() &&
+      current() !== Token.objectEndToken
+    ) {
+      pairs.push(parsePair())
+
+      // Skip trailing format-padding whitespaces
       skipWhitespaces()
+    }
 
-      const pair = parsePair()
-
-      if (!pair) {
-        // Skip trailing format-padding whitespaces
-        skipWhitespaces()
-
-        if (current() !== Token.objectEndToken) {
-          throw new Error(`Expecting closing object but got: ${current()}`)
-        }
-
-        // Skip `}` token
-        next()
-        break
-      }
-
-      pairs.push(pair)
-    } while (current())
+    expectAndSkip(Token.objectEndToken)
 
     return {
       type: 'object',
@@ -236,7 +213,7 @@ export function parse (input: string) {
     const key = parseIdent()
 
     if (!key) {
-      return null
+      throwUnexpected()
     }
 
     skipWhitespaces()
@@ -244,7 +221,8 @@ export function parse (input: string) {
     let value: AstPairNode['value']
 
     if (current() !== Token.objectPairSeparator) {
-      value = key
+      // Copy key node
+      value = JSON.parse(JSON.stringify(key))
     } else {
       // Skip `:`
       next()
@@ -310,6 +288,27 @@ export function parse (input: string) {
       type: 'ident',
       ident
     }
+  }
+
+  function expect (token: Token) {
+    const char = current()
+
+    if (!char) {
+      throw new Error('Unexpected EOF')
+    }
+
+    if (char !== token) {
+      throw new Error(`Unexpected token. Expecting '${token}' but got: ${char}`)
+    }
+  }
+
+  function throwUnexpected () {
+    throw new Error(`Unexpected token: ${current()}`)
+  }
+
+  function expectAndSkip (token: Token) {
+    expect(token)
+    next()
   }
 
   function ensureAndSkip (token: Token) {
