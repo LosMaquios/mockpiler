@@ -260,28 +260,23 @@ export function parse (input: string) {
         ident += current()
       } while (IDENTIFIER_REGEX.test(next()))
     } else {
-      // Skip leading identifier token `'`
-      next()
-
+      let char: string
       let escaping = false
 
-      do {
-        const char = current()
-
+      while (
+        next() &&
+        ((char = current()) !== Token.identifierToken || escaping)
+      ) {
         escaping = !escaping && char === Token.escapeToken
 
         // Avoid appending escaping char
         if (!escaping) {
           ident += char
         }
-      } while (
-        next() &&
-        !escaping &&
-        current() !== Token.identifierToken
-      )
+      }
 
       // Skip trailing identifier token `'`
-      next()
+      expectAndSkip(Token.identifierToken)
     }
 
     return {
