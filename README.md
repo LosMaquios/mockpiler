@@ -68,6 +68,6 @@ console.log(people)
 
 ## Roadmap / Ideas
 
-  - [ ] Implement a lexer for codeframes
+  - [x] Implement a lexer for codeframes
   - [ ] Make an integration with libs like [Faker.js](https://github.com/marak/Faker.js/)
   - [ ] Support for spread operators `e.g. { ...spread }`

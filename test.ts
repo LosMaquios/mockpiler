@@ -1,4 +1,6 @@
 import mock, { parseMock } from './src/index'
+import { scan, TokenLocation } from './src/lexer'
+import { generateCodeframe } from './src/codeframe'
 
 const fruits = [
   'watermelon',
@@ -31,25 +33,18 @@ console.log(
   `
 )
 
-console.log(
-  JSON.stringify(parseMock(`
-    {
-      q: [
-        (356) {
-          ab
-          c
-          d
-          e
-        }
-
-        (55) {
-          b
-        }
-
-        (2) [
-
-        ]
+const tokens = scan(`
+  [
+    (2) {
+      name
+      age: randomAge
+      favoriteFruits: [
+        (3) 'random-Fruit'
       ]
     }
-  `))
+  ]
+`)
+
+console.log(
+  generateCodeframe(tokens, tokens.length - 5)
 )

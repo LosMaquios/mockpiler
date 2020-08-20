@@ -1,3 +1,4 @@
+import { scan } from './lexer'
 import {
   parse,
   AstArrayNode,
@@ -15,7 +16,8 @@ export interface MockContext {
 export function createCompiler (context: MockContext) {
   return function compileMock (template: TemplateStringsArray, ...substitutions: any[]) {
     const input = String.raw(template, ...substitutions)
-    const rootNode = parse(input)
+    const tokens = scan(input)
+    const rootNode = parse(tokens)
 
     return compileRoot(rootNode)
 

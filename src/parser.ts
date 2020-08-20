@@ -1,33 +1,9 @@
-export enum Token {
-  /**
-   * Array tokens
-   */
-  arrayStartToken = '[',
-  arrayEndToken = ']',
-
-  /**
-   * Object tokens
-   */
-  objectStartToken = '{',
-  objectEndToken = '}',
-  objectPairSeparator = ':',
-
-  /**
-   * Count tokens
-   */
-  countStartToken = '(',
-  countEndToken = ')',
-
-  /**
-   * Identifier tokens
-   */
-  identifierToken = '\'',
-
-  /**
-   * Escape tokens
-   */
-  escapeToken = '\\'
-}
+import {
+  Token,
+  TokenChar,
+  TokenType
+} from './lexer'
+import { generateCodeframe } from './codeframe'
 
 export type AstNodeType = 'ident' | 'object' | 'array' | 'pair' | 'element'
 
@@ -66,38 +42,51 @@ export interface AstObjectNode extends AstNode {
 
 export type AstRootNode = AstObjectNode | AstArrayNode
 
-// TODO: Generate codeframes for a better beginners debugging
+const TRIM_IDENTIFIER_REGEX = new RegExp(`^${TokenChar.identifierToken}|${TokenChar.identifierToken}$`)
 
-const WHITESPACE_REGEX = /[\n\r\s]/
-const IDENTIFIER_REGEX = /[\.a-z-_]/i
-const DIGIT_REGEX = /\d/
+class ParserError extends Error {
+  name = 'ParserError'
+}
 
-export function parse (input: string) {
+export function parse (tokens: Token[]) {
   let index = 0
 
   return parseRoot()
 
   function parseRoot (): AstRootNode {
-    // Skip leading whitespaces for root tokens `  `<-{ or `  `<-[
-    skipWhitespaces()
-
     const node: AstRootNode = (
       parseArray() ??
       parseObject()
     )
 
     if (!node) {
-      throw new Error(`Invalid token: ${current()}`)
+      throwWithCodeFrame(`Invalid token: ${current()}`)
     }
 
-    // Skip trailing whitespaces for root tokens }->`  ` or ]->`  `
-    skipWhitespaces()
-
     if (current()) {
-      throw new Error(`Ignored token: ${current()}`)
+      throwWithCodeFrame(`Ignored token: ${current()}`)
     }
 
     return node
+  }
+
+  function parseArray (): AstArrayNode {
+    if (!ensureAndSkip(TokenChar.arrayStartToken)) {
+      return null
+    }
+
+    const elements: AstElementNode[] = []
+
+    while (current() && !is(TokenChar.arrayEndToken)) {
+      elements.push(parseElement())
+    }
+
+    expectAndSkip(TokenChar.arrayEndToken)
+
+    return {
+      type: 'array',
+      elements
+    }
   }
 
   function parseElement (): AstElementNode {
@@ -107,43 +96,31 @@ export function parse (input: string) {
       value: null
     }
 
-    if (current() !== Token.countStartToken) {
+    if (!is(TokenChar.countStartToken)) {
       elementNode.count = 1
     } else {
       // Skip leading count token `(`<-$count)
       next()
 
-      // Skip leading inner count whitespaces (`  `<-$count)
-      skipWhitespaces()
+      const token = current()
 
-      if (!DIGIT_REGEX.test(current())) {
+      if (typeof token === 'number') {
+        elementNode.count = token
+        next()
+      } else {
         elementNode.count = parseIdent()
 
         if (!elementNode.count) {
-          throw new Error(`Expecting count expression but got: ${current()}`)
+          throwWithCodeFrame(`Expecting count expression but got: ${token}`)
         }
-      } else {
-        let count = ''
-
-        do {
-          count += current()
-        } while (DIGIT_REGEX.test(next()))
-
-        elementNode.count = parseInt(count)
       }
 
-      // Skip trailing inner count whitespaces ($count->`  `)
-      skipWhitespaces()
-
-      if (current() !== Token.countEndToken) {
-        throw new Error(`Expecting closing count token but got: ${current()}`)
+      if (!is(TokenChar.countEndToken)) {
+        throwWithCodeFrame(`Expecting closing count token but got: ${current()}`)
       }
 
       // Skip trailing count token ($count->`)`
       next()
-
-      // Skip trailing format-padding whitespaces ($count)->`  `
-      skipWhitespaces()
     }
 
     elementNode.value = (
@@ -153,55 +130,24 @@ export function parse (input: string) {
     )
 
     if (!elementNode.value) {
-      throw new Error(`Invalid token: ${current()}`)
+      throw new ParserError(`Invalid token: ${current()}`)
     }
 
     return elementNode
   }
 
-  function parseArray (): AstArrayNode {
-    if (!ensureAndSkip(Token.arrayStartToken)) {
-      return null
-    }
-
-    const elements: AstElementNode[] = []
-
-    while (
-      current() &&
-      current() !== Token.arrayEndToken
-    ) {
-      elements.push(parseElement())
-
-      // Skip trailing format-padding whitespaces
-      skipWhitespaces()
-    }
-
-    expectAndSkip(Token.arrayEndToken)
-
-    return {
-      type: 'array',
-      elements
-    }
-  }
-
   function parseObject (): AstObjectNode {
-    if (!ensureAndSkip(Token.objectStartToken)) {
+    if (!ensureAndSkip(TokenChar.objectStartToken)) {
       return null
     }
 
     const pairs: AstPairNode[] = []
 
-    while (
-      current() &&
-      current() !== Token.objectEndToken
-    ) {
+    while (current() && !is(TokenChar.objectEndToken)) {
       pairs.push(parsePair())
-
-      // Skip trailing format-padding whitespaces
-      skipWhitespaces()
     }
 
-    expectAndSkip(Token.objectEndToken)
+    expectAndSkip(TokenChar.objectEndToken)
 
     return {
       type: 'object',
@@ -216,19 +162,14 @@ export function parse (input: string) {
       throwUnexpected()
     }
 
-    skipWhitespaces()
-
     let value: AstPairNode['value']
 
-    if (current() !== Token.objectPairSeparator) {
+    if (!is(TokenChar.objectPairSeparator)) {
       // Copy key node
       value = JSON.parse(JSON.stringify(key))
     } else {
       // Skip `:`
       next()
-
-      // Skip trailing :->`  `
-      skipWhitespaces()
 
       value = (
         parseArray() ??
@@ -237,7 +178,7 @@ export function parse (input: string) {
       )
 
       if (!value) {
-        return null
+        throwWithCodeFrame(`Unexpected token: ${current()}`)
       }
     }
 
@@ -249,84 +190,67 @@ export function parse (input: string) {
   }
 
   function parseIdent (): AstIdentNode {
-    let ident = ''
+    const token = tokens[index]
 
-    if (current() !== Token.identifierToken) {
-      if (!IDENTIFIER_REGEX.test(current())) {
-        return null
-      }
-
-      do {
-        ident += current()
-      } while (IDENTIFIER_REGEX.test(next()))
-    } else {
-      let char: string
-      let escaping = false
-
-      while (
-        next() &&
-        ((char = current()) !== Token.identifierToken || escaping)
-      ) {
-        escaping = !escaping && char === Token.escapeToken
-
-        // Avoid appending escaping char
-        if (!escaping) {
-          ident += char
-        }
-      }
-
-      // Skip trailing identifier token `'`
-      expectAndSkip(Token.identifierToken)
+    if (token?.type !== TokenType.ident) {
+      return null
     }
+
+    // Advance to next token
+    next()
 
     return {
       type: 'ident',
-      ident
+      ident: (token.value as string).replace(TRIM_IDENTIFIER_REGEX, '')
     }
   }
 
-  function expect (token: Token) {
-    const char = current()
-
-    if (!char) {
-      throw new Error('Unexpected EOF')
+  function expect (token: TokenChar) {
+    if (current() == null || current() === '') {
+      throw new ParserError('Unexpected EOF')
     }
 
-    if (char !== token) {
-      throw new Error(`Unexpected token. Expecting '${token}' but got: ${char}`)
+    if (!is(token)) {
+      throwWithCodeFrame(`Unexpected token. Expecting '${token}' but got: ${current()}`)
     }
   }
 
   function throwUnexpected () {
-    throw new Error(`Unexpected token: ${current()}`)
+    throwWithCodeFrame(`Unexpected token: ${current()}`)
   }
 
-  function expectAndSkip (token: Token) {
+  function expectAndSkip (token: TokenChar) {
     expect(token)
     next()
   }
 
-  function ensureAndSkip (token: Token) {
-    if (current() !== token) {
+  function throwWithCodeFrame (message: string) {
+    throw new ParserError([
+      null,
+      `${generateCodeframe(tokens, index)}`,
+      message
+    ].join('\n\n'))
+  }
+
+  function ensureAndSkip (token: TokenChar) {
+    if (!is(token)) {
       return false
     }
 
-    next()
-    skipWhitespaces()
-    return true
+    return next()
+  }
+
+  function is (value: string) {
+    return current() === value
   }
 
   function current () {
-    return input[index]
+    return tokens[index]?.value
   }
 
   function next () {
     ++index
 
     return current()
-  }
-
-  function skipWhitespaces () {
-    while (WHITESPACE_REGEX.test(current()) && next());
   }
 }
