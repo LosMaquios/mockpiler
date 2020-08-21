@@ -1,4 +1,4 @@
-import mock, { parseMock } from './src/index'
+import mock, { parse } from './src/index'
 import { scan, TokenLocation } from './src/lexer'
 import { generateCodeframe } from './src/codeframe'
 
@@ -46,5 +46,5 @@ const tokens = scan(`
 `)
 
 console.log(
-  generateCodeframe(tokens, tokens.length - 5)
+  generateCodeframe(tokens, 2)
 )

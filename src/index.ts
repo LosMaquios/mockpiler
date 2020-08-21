@@ -1,2 +1,3 @@
-export { parse as parseMock } from './parser'
+export * from './parser'
+export * from './lexer'
 export { createCompiler as default } from './compiler'

@@ -4,8 +4,6 @@ const PADDING_CHAR = ' '
 const INDICATOR_CHAR = '^'
 const MAX_LINES = 4
 
-// TODO: Fix bugs for SOF/EOF token indication
-
 export function generateCodeframe (
   tokens: Token[], 
   highlightTokenIndex: number
@@ -16,7 +14,10 @@ export function generateCodeframe (
   }
 
   const MIN_LINE = Math.max(highlightToken.location.start.line - MAX_LINES, 1)
-  const MAX_LINE = highlightToken.location.start.line + MAX_LINES
+  const MAX_LINE = Math.min(
+    highlightToken.location.start.line + MAX_LINES, 
+    tokens[tokens.length - 1].location.start.line
+  )
   
   let upperIndex = highlightTokenIndex - 1
   let lowerIndex = highlightTokenIndex + 1
@@ -37,7 +38,7 @@ export function generateCodeframe (
     const { value, location: { start, end } } = upperToken
 
     if (!code[start.line]) {
-      code[start.line] = upperIndex === 0 ? `${getPadding(start.column - 1)}${value}` : value
+      code[start.line] = value
       code[prevUpperTokenStartLocation.line] = `${getPadding(prevUpperTokenStartLocation.column - 1)}${code[prevUpperTokenStartLocation.line]}`
     } else {
       code[start.line] = `${value}${getPadding(prevUpperTokenStartLocation.column - end.column)}${code[start.line]}`
@@ -46,6 +47,8 @@ export function generateCodeframe (
     prevUpperTokenStartLocation = start
     upperIndex--
   }
+
+  code[prevUpperTokenStartLocation.line] = `${getPadding(prevUpperTokenStartLocation.column - 1)}${code[prevUpperTokenStartLocation.line]}`
 
   /**
    * Build lower code block
