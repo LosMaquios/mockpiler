@@ -1,24 +1,79 @@
-import { Token } from './lexer'
+import { Token, TokenArray } from './lexer'
 
 const PADDING_CHAR = ' '
 const INDICATOR_CHAR = '^'
 const MAX_LINES = 4
+
+class CodeframeBuffer {
+  private linesBuffer: { [line: number]: string } = {}
+
+  constructor (
+    private minLine: number,
+    private maxLine: number) {}
+
+  hasLine (line: number) {
+    return line in this.linesBuffer
+  }
+
+  addLine (line: number, initialValue: any) {
+    this.linesBuffer[line] = String(initialValue)
+  }
+
+  prependToLine (line: number, value: string) {
+    this.linesBuffer[line] = value + this.linesBuffer[line]
+  }
+
+  appendToLine (line: number, value: string) {
+    this.linesBuffer[line] += value
+  }
+
+  getFormattedOutput (highlightToken: Token) {
+    const formattedCode = []
+    const maxLineLength = String(this.maxLine).length
+
+    for (let line = this.minLine; line <= this.maxLine; line++) {
+      const lineIndicator = `${getPadding(maxLineLength - String(line).length)}${line}|`
+
+      if (!this.hasLine(line)) {
+        formattedCode.push(lineIndicator)
+      } else {
+        formattedCode.push(`${lineIndicator}${this.linesBuffer[line]}`)
+      }
+
+      if (line === highlightToken.location.start.line) {
+        formattedCode.push(`${
+          getPadding(highlightToken.location.start.column + maxLineLength)
+        }${
+          getLineIndicator(highlightToken.location.end.column - highlightToken.location.start.column)
+        }`)
+      }
+    }
+
+    return formattedCode.join('\n')
+  }
+}
 
 export function generateCodeframe (
   tokens: Token[], 
   highlightTokenIndex: number
 ) {
   const highlightToken = tokens[highlightTokenIndex]
-  const code = {
-    [highlightToken.location.start.line]: highlightToken.value
-  }
-
   const MIN_LINE = Math.max(highlightToken.location.start.line - MAX_LINES, 1)
   const MAX_LINE = Math.min(
     highlightToken.location.start.line + MAX_LINES, 
     tokens[tokens.length - 1].location.start.line
   )
-  
+
+  const buffer = new CodeframeBuffer(
+    MIN_LINE,
+    MAX_LINE
+  )
+
+  buffer.addLine(
+    highlightToken.location.start.line, 
+    highlightToken.value
+  )
+
   let upperIndex = highlightTokenIndex - 1
   let lowerIndex = highlightTokenIndex + 1
   
@@ -37,18 +92,24 @@ export function generateCodeframe (
   ) {
     const { value, location: { start, end } } = upperToken
 
-    if (!code[start.line]) {
-      code[start.line] = value
-      code[prevUpperTokenStartLocation.line] = `${getPadding(prevUpperTokenStartLocation.column - 1)}${code[prevUpperTokenStartLocation.line]}`
+    if (buffer.hasLine(start.line)) {
+      buffer.prependToLine(start.line, `${value}${getPadding(prevUpperTokenStartLocation.column - end.column)}`)
     } else {
-      code[start.line] = `${value}${getPadding(prevUpperTokenStartLocation.column - end.column)}${code[start.line]}`
+      buffer.addLine(start.line, value)
+      buffer.prependToLine(
+        prevUpperTokenStartLocation.line, 
+        getPadding(prevUpperTokenStartLocation.column - 1)
+      )
     }
 
     prevUpperTokenStartLocation = start
     upperIndex--
   }
 
-  code[prevUpperTokenStartLocation.line] = `${getPadding(prevUpperTokenStartLocation.column - 1)}${code[prevUpperTokenStartLocation.line]}`
+  buffer.prependToLine(
+    prevUpperTokenStartLocation.line, 
+    getPadding(prevUpperTokenStartLocation.column - 1)
+  )
 
   /**
    * Build lower code block
@@ -56,37 +117,16 @@ export function generateCodeframe (
   while ((lowerToken = tokens[lowerIndex++]) && lowerToken.location.start.line <= MAX_LINE) {
     const { value, location: { start, end } } = lowerToken
 
-    if (!code[start.line]) {
-      code[start.line] = `${getPadding(start.column - 1)}${value}`
+    if (!buffer.hasLine(start.line)) {
+      buffer.addLine(start.line, `${getPadding(start.column - 1)}${value}`)
     } else {
-      code[start.line] += `${getPadding(start.column - prevLowerTokenEndLocation.column)}${value}`
+      buffer.appendToLine(start.line, `${getPadding(start.column - prevLowerTokenEndLocation.column)}${value}`)
     }
 
     prevLowerTokenEndLocation = end
   }
 
-  const formattedCode = []
-  const maxLineLength = String(MAX_LINE).length
-
-  for (let line = MIN_LINE; line <= MAX_LINE; line++) {
-    const lineIndicator = `${getPadding(maxLineLength - String(line).length)}${line}|`
-
-    if (!code[line]) {
-      formattedCode.push(lineIndicator)
-    } else {
-      formattedCode.push(`${lineIndicator}${code[line]}`)
-    }
-
-    if (line === highlightToken.location.start.line) {
-      formattedCode.push(`${
-        getPadding(highlightToken.location.start.column + maxLineLength)
-      }${
-        getLineIndicator(highlightToken.location.end.column - highlightToken.location.start.column)
-      }`)
-    }
-  }
-
-  return formattedCode.join('\n')
+  return buffer.getFormattedOutput(highlightToken)
 }
 
 function getLineIndicator (size: number) {

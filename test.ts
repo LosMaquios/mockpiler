@@ -46,5 +46,5 @@ const tokens = scan(`
 `)
 
 console.log(
-  generateCodeframe(tokens, 2)
+  generateCodeframe(tokens, tokens.length - 2)
 )

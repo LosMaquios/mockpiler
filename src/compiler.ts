@@ -14,8 +14,8 @@ export interface MockContext {
 }
 
 export function createCompiler (context: MockContext) {
-  return function compileMock (template: TemplateStringsArray, ...substitutions: any[]) {
-    const input = String.raw(template, ...substitutions)
+  return function compileMock (...args: Parameters<typeof String['raw']>) {
+    const input = String.raw(...args)
     const tokens = scan(input)
     const rootNode = parse(tokens)
 
