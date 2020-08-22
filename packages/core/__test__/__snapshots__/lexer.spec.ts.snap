@@ -1,0 +1,244 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`lexer should scan valid code 1`] = `
+Array [
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 4,
+        "line": 2,
+      },
+      "start": Object {
+        "column": 3,
+        "line": 2,
+      },
+    },
+    "type": 1,
+    "value": "{",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 9,
+        "line": 3,
+      },
+      "start": Object {
+        "column": 5,
+        "line": 3,
+      },
+    },
+    "type": 0,
+    "value": "name",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 8,
+        "line": 4,
+      },
+      "start": Object {
+        "column": 5,
+        "line": 4,
+      },
+    },
+    "type": 0,
+    "value": "age",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 12,
+        "line": 5,
+      },
+      "start": Object {
+        "column": 5,
+        "line": 5,
+      },
+    },
+    "type": 0,
+    "value": "matches",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 13,
+        "line": 5,
+      },
+      "start": Object {
+        "column": 12,
+        "line": 5,
+      },
+    },
+    "type": 1,
+    "value": ":",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 15,
+        "line": 5,
+      },
+      "start": Object {
+        "column": 14,
+        "line": 5,
+      },
+    },
+    "type": 2,
+    "value": "[",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 13,
+        "line": 6,
+      },
+      "start": Object {
+        "column": 7,
+        "line": 6,
+      },
+    },
+    "type": 0,
+    "value": "person",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 8,
+        "line": 7,
+      },
+      "start": Object {
+        "column": 7,
+        "line": 7,
+      },
+    },
+    "type": 3,
+    "value": "(",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 9,
+        "line": 7,
+      },
+      "start": Object {
+        "column": 8,
+        "line": 7,
+      },
+    },
+    "type": 4,
+    "value": 3,
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 10,
+        "line": 7,
+      },
+      "start": Object {
+        "column": 9,
+        "line": 7,
+      },
+    },
+    "type": 3,
+    "value": ")",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 12,
+        "line": 7,
+      },
+      "start": Object {
+        "column": 11,
+        "line": 7,
+      },
+    },
+    "type": 1,
+    "value": "{",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 13,
+        "line": 8,
+      },
+      "start": Object {
+        "column": 9,
+        "line": 8,
+      },
+    },
+    "type": 0,
+    "value": "name",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 12,
+        "line": 9,
+      },
+      "start": Object {
+        "column": 9,
+        "line": 9,
+      },
+    },
+    "type": 0,
+    "value": "age",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 8,
+        "line": 10,
+      },
+      "start": Object {
+        "column": 7,
+        "line": 10,
+      },
+    },
+    "type": 1,
+    "value": "}",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 6,
+        "line": 11,
+      },
+      "start": Object {
+        "column": 5,
+        "line": 11,
+      },
+    },
+    "type": 2,
+    "value": "]",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 4,
+        "line": 12,
+      },
+      "start": Object {
+        "column": 3,
+        "line": 12,
+      },
+    },
+    "type": 1,
+    "value": "}",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 1,
+        "line": 13,
+      },
+      "start": Object {
+        "column": 1,
+        "line": 13,
+      },
+    },
+    "type": "EOF",
+    "value": "",
+  },
+]
+`;

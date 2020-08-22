@@ -1,0 +1,95 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`parser should parse valid token sequence 1`] = `
+Object {
+  "pairs": Array [
+    Object {
+      "key": Object {
+        "ident": "name",
+        "type": "ident",
+      },
+      "type": "pair",
+      "value": Object {
+        "ident": "name",
+        "type": "ident",
+      },
+    },
+    Object {
+      "key": Object {
+        "ident": "age",
+        "type": "ident",
+      },
+      "type": "pair",
+      "value": Object {
+        "ident": "age",
+        "type": "ident",
+      },
+    },
+    Object {
+      "key": Object {
+        "ident": "matches",
+        "type": "ident",
+      },
+      "type": "pair",
+      "value": Object {
+        "elements": Array [
+          Object {
+            "count": 1,
+            "type": "element",
+            "value": Object {
+              "ident": "person",
+              "type": "ident",
+            },
+          },
+          Object {
+            "count": 3,
+            "type": "element",
+            "value": Object {
+              "pairs": Array [
+                Object {
+                  "key": Object {
+                    "ident": "name",
+                    "type": "ident",
+                  },
+                  "type": "pair",
+                  "value": Object {
+                    "ident": "name",
+                    "type": "ident",
+                  },
+                },
+                Object {
+                  "key": Object {
+                    "ident": "age",
+                    "type": "ident",
+                  },
+                  "type": "pair",
+                  "value": Object {
+                    "ident": "age",
+                    "type": "ident",
+                  },
+                },
+              ],
+              "type": "object",
+            },
+          },
+        ],
+        "type": "array",
+      },
+    },
+  ],
+  "type": "object",
+}
+`;
+
+exports[`parser should throw on invalid token 1`] = `
+"
+
+1|
+2|  {
+3|    test]
+          ^
+4|  }
+5|
+
+Unexpected token: ]"
+`;

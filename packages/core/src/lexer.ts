@@ -107,7 +107,7 @@ const COUNT_TOKENS = [
   TokenChar.countEndToken
 ]
 
-class LexerError extends Error {
+export class LexerError extends Error {
   name = 'LexerError'
 }
 

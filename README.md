@@ -1,6 +1,6 @@
 # MockPiler
 
-  Generate mock data using a dead simple, intuitive, and structured language.
+  Generate mock data using a dead simple JSON-like language.
 
   **Status:** Currently, it's just an experiment (with bad-written code)
 

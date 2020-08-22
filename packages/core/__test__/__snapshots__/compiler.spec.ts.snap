@@ -1,0 +1,26 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`compiler should compile valid code 1`] = `
+Object {
+  "age": 40,
+  "matches": Array [
+    Object {
+      "age": 40,
+      "name": "Test",
+    },
+    Object {
+      "age": 40,
+      "name": "Test",
+    },
+    Object {
+      "age": 40,
+      "name": "Test",
+    },
+    Object {
+      "age": 40,
+      "name": "Test",
+    },
+  ],
+  "name": "Test",
+}
+`;
