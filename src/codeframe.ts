@@ -1,4 +1,4 @@
-import { Token, TokenArray } from './lexer'
+import { Token } from './lexer'
 
 const PADDING_CHAR = ' '
 const INDICATOR_CHAR = '^'
@@ -15,19 +15,19 @@ class CodeframeBuffer {
     return line in this.linesBuffer
   }
 
-  addLine (line: number, initialValue: any) {
-    this.linesBuffer[line] = String(initialValue)
+  addLine (line: number, ...values: any[]) {
+    this.linesBuffer[line] = values.join('')
   }
 
-  prependToLine (line: number, value: string) {
-    this.linesBuffer[line] = value + this.linesBuffer[line]
+  prependToLine (line: number, ...values: any[]) {
+    this.linesBuffer[line] = values.join('') + this.linesBuffer[line]
   }
 
-  appendToLine (line: number, value: string) {
-    this.linesBuffer[line] += value
+  appendToLine (line: number, ...values: any[]) {
+    this.linesBuffer[line] += values.join('')
   }
 
-  getFormattedOutput (highlightToken: Token) {
+  getFormattedOutput (highlightLocation: Token['location']) {
     const formattedCode = []
     const maxLineLength = String(this.maxLine).length
 
@@ -40,12 +40,11 @@ class CodeframeBuffer {
         formattedCode.push(`${lineIndicator}${this.linesBuffer[line]}`)
       }
 
-      if (line === highlightToken.location.start.line) {
-        formattedCode.push(`${
-          getPadding(highlightToken.location.start.column + maxLineLength)
-        }${
-          getLineIndicator(highlightToken.location.end.column - highlightToken.location.start.column)
-        }`)
+      if (line === highlightLocation.start.line) {
+        formattedCode.push(
+          getPadding(highlightLocation.start.column + maxLineLength) +
+          getLineIndicator(highlightLocation.end.column - highlightLocation.start.column)
+        )
       }
     }
 
@@ -57,43 +56,41 @@ export function generateCodeframe (
   tokens: Token[], 
   highlightTokenIndex: number
 ) {
-  const highlightToken = tokens[highlightTokenIndex]
-  const MIN_LINE = Math.max(highlightToken.location.start.line - MAX_LINES, 1)
+  const { location: highlightLocation, value: highlightValue } = tokens[highlightTokenIndex]
+  const MIN_LINE = Math.max(highlightLocation.start.line - MAX_LINES, 1)
   const MAX_LINE = Math.min(
-    highlightToken.location.start.line + MAX_LINES, 
+    highlightLocation.start.line + MAX_LINES, 
     tokens[tokens.length - 1].location.start.line
   )
 
-  const buffer = new CodeframeBuffer(
-    MIN_LINE,
-    MAX_LINE
-  )
+  const buffer = new CodeframeBuffer(MIN_LINE, MAX_LINE)
 
-  buffer.addLine(
-    highlightToken.location.start.line, 
-    highlightToken.value
-  )
+  buffer.addLine(highlightLocation.start.line, highlightValue)
 
   let upperIndex = highlightTokenIndex - 1
   let lowerIndex = highlightTokenIndex + 1
-  
+
   let upperToken: Token
   let lowerToken: Token
 
-  let prevUpperTokenStartLocation = highlightToken.location.start
-  let prevLowerTokenEndLocation = highlightToken.location.end
+  let prevUpperTokenStartLocation = highlightLocation.start
+  let prevLowerTokenEndLocation = highlightLocation.end
 
   /**
    * Build upper code block
    */
   while (
-    upperIndex >= 0 && 
-    (upperToken = tokens[upperIndex]).location.start.line >= MIN_LINE
+    upperIndex >= 0 &&
+    (upperToken = tokens[upperIndex--]).location.start.line >= MIN_LINE
   ) {
     const { value, location: { start, end } } = upperToken
 
     if (buffer.hasLine(start.line)) {
-      buffer.prependToLine(start.line, `${value}${getPadding(prevUpperTokenStartLocation.column - end.column)}`)
+      buffer.prependToLine(
+        start.line, 
+        value, 
+        getPadding(prevUpperTokenStartLocation.column - end.column)
+      )
     } else {
       buffer.addLine(start.line, value)
       buffer.prependToLine(
@@ -103,7 +100,6 @@ export function generateCodeframe (
     }
 
     prevUpperTokenStartLocation = start
-    upperIndex--
   }
 
   buffer.prependToLine(
@@ -114,19 +110,26 @@ export function generateCodeframe (
   /**
    * Build lower code block
    */
-  while ((lowerToken = tokens[lowerIndex++]) && lowerToken.location.start.line <= MAX_LINE) {
+  while (
+    lowerIndex < tokens.length &&
+    (lowerToken = tokens[lowerIndex++]).location.start.line <= MAX_LINE
+  ) {
     const { value, location: { start, end } } = lowerToken
 
     if (!buffer.hasLine(start.line)) {
-      buffer.addLine(start.line, `${getPadding(start.column - 1)}${value}`)
+      buffer.addLine(start.line, getPadding(start.column - 1), value)
     } else {
-      buffer.appendToLine(start.line, `${getPadding(start.column - prevLowerTokenEndLocation.column)}${value}`)
+      buffer.appendToLine(
+        start.line, 
+        getPadding(start.column - prevLowerTokenEndLocation.column), 
+        value
+      )
     }
 
     prevLowerTokenEndLocation = end
   }
 
-  return buffer.getFormattedOutput(highlightToken)
+  return buffer.getFormattedOutput(highlightLocation)
 }
 
 function getLineIndicator (size: number) {
