@@ -30,11 +30,11 @@ export enum TokenChar {
 }
 
 export enum TokenType {
-  ident,
-  object,
-  array,
-  count,
-  countDigit,
+  identifier = 'identifier',
+  object = 'object',
+  array = 'array',
+  count = 'count',
+  countNumber = 'countNumber',
   EOF = 'EOF'
 }
 
@@ -127,14 +127,14 @@ export function scan (input: string): Token[] {
     } else if (is(COUNT_TOKENS)) {
       tokens.push(consumeToken(TokenType.count))
     } else if (is(COUNT_DIGIT_REGEX)) {
-      const token = consumeRegex(TokenType.countDigit, COUNT_DIGIT_REGEX)
+      const token = consumeRegex(TokenType.countNumber, COUNT_DIGIT_REGEX)
       token.value = parseInt(token.value as string)
 
       tokens.push(token)
     } else if (is(TokenChar.identifierToken)) {
       tokens.push(consumeIdent())
     } else if (is(START_IDENTIFIER_REGEX)) {
-      tokens.push(consumeRegex(TokenType.ident, IDENTIFIER_REGEX))
+      tokens.push(consumeRegex(TokenType.identifier, IDENTIFIER_REGEX))
     } else if (is(LINE_CHAR)) {
       ++line
       ++index
@@ -205,7 +205,7 @@ export function scan (input: string): Token[] {
     advance()
 
     return {
-      type: TokenType.ident,
+      type: TokenType.identifier,
       value: ident,
       location: {
         start,

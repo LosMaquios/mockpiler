@@ -1,46 +1,59 @@
 import {
   Token,
   TokenChar,
-  TokenType
+  TokenType,
+  TokenLocation
 } from './lexer'
 import { generateCodeframe } from './codeframe'
 
-export type AstNodeType = 'ident' | 'object' | 'array' | 'pair' | 'element'
+export enum AstNodeType {
+  Root = 'Root',
+  Identifier = 'Identifier',
+  Object = 'Object',
+  Array = 'Array',
+  Property = 'Property',
+  Element = 'Element'
+}
 
 export interface AstNode {
   type: AstNodeType
+  location: Token['location']
 }
 
-export interface AstPairNode extends AstNode {
-  type: 'pair'
-  key: AstIdentNode
+export interface AstPropertyNode extends AstNode {
+  type: AstNodeType.Property
+  key: AstIdentifierNode
   value: AstValueNode
 }
 
-export interface AstIdentNode extends AstNode {
-  type: 'ident'
-  ident: string
+export interface AstIdentifierNode extends AstNode {
+  type: AstNodeType.Identifier
+  name: string
 }
 
 export interface AstArrayNode extends AstNode {
-  type: 'array'
+  type: AstNodeType.Array
   elements: AstElementNode[]
 }
 
-export type AstValueNode = AstObjectNode | AstArrayNode | AstIdentNode
-
 export interface AstElementNode extends AstNode {
-  type: 'element'
-  count: number | AstIdentNode
+  type: AstNodeType.Element
+  count: number | AstIdentifierNode
   value: AstValueNode
 }
 
 export interface AstObjectNode extends AstNode {
-  type: 'object'
-  pairs: AstPairNode[]
+  type: AstNodeType.Object
+  properties: AstPropertyNode[]
 }
 
-export type AstRootNode = AstObjectNode | AstArrayNode
+export interface AstRootNode extends AstNode {
+  type: AstNodeType.Root
+  value: AstObjectOrArrayNode
+}
+
+type AstObjectOrArrayNode = AstObjectNode | AstArrayNode
+export type AstValueNode = AstObjectOrArrayNode | AstIdentifierNode
 
 const TRIM_IDENTIFIER_REGEX = new RegExp(`^${TokenChar.identifierToken}|${TokenChar.identifierToken}$`)
 
@@ -54,119 +67,160 @@ export function parse (tokens: Token[]) {
   return parseRoot()
 
   function parseRoot (): AstRootNode {
-    const node: AstRootNode = (
+    const value: AstRootNode['value'] = (
       parseArray() ??
       parseObject()
     )
 
-    if (!node) {
-      throwWithCodeFrame(`Invalid token: ${current()}`)
+    if (!value) {
+      throwUnexpected([
+        TokenChar.arrayStartToken,
+        TokenChar.objectStartToken
+      ])
     }
 
-    if (current()) {
-      throwWithCodeFrame(`Ignored token: ${current()}`)
+    return {
+      type: AstNodeType.Root,
+      value,
+      location: {
+        start: { line: 1, column: 1 },
+        end: clone(current().location.end)
+      }
     }
-
-    return node
   }
 
   function parseArray (): AstArrayNode {
-    if (!ensureAndSkip(TokenChar.arrayStartToken)) {
+    if (!is(TokenChar.arrayStartToken)) {
       return null
     }
 
+    const startLocation: TokenLocation = clone(current().location.start)
     const elements: AstElementNode[] = []
+
+    // Skip start token `[`
+    next()
 
     while (current() && !is(TokenChar.arrayEndToken)) {
       elements.push(parseElement())
     }
 
-    expectAndSkip(TokenChar.arrayEndToken)
+    expect(TokenChar.arrayEndToken)
+
+    const endLocation = clone(current().location.end)
+
+    // Skip end token `]`
+    next()
 
     return {
-      type: 'array',
-      elements
+      type: AstNodeType.Array,
+      elements,
+      location: {
+        start: startLocation,
+        end: endLocation
+      }
     }
   }
 
   function parseElement (): AstElementNode {
-    const elementNode: AstElementNode = {
-      type: 'element',
-      count: null,
-      value: null
-    }
+    let count: AstElementNode['count']
+    let startLocation: TokenLocation
 
     if (!is(TokenChar.countStartToken)) {
-      elementNode.count = 1
+      count = 1
     } else {
+      startLocation = clone(current().location.start)
+
       // Skip leading count token `(`<-$count)
       next()
 
       const token = current()
 
-      if (typeof token === 'number') {
-        elementNode.count = token
+      if (token.type === TokenType.countNumber) {
+        count = token.value as number
         next()
       } else {
-        elementNode.count = parseIdent()
+        count = parseIdentifier()
 
-        if (!elementNode.count) {
-          throwWithCodeFrame(`Expecting count expression but got: ${token}`)
+        if (!count) {
+          throwUnexpected([TokenType.count])
         }
       }
 
-      if (!is(TokenChar.countEndToken)) {
-        throwWithCodeFrame(`Expecting closing count token but got: ${current()}`)
-      }
+      expect(TokenChar.countEndToken)
 
       // Skip trailing count token ($count->`)`
       next()
     }
 
-    elementNode.value = (
+    const value: AstElementNode['value'] = (
       parseArray() ??
       parseObject() ??
-      parseIdent()
+      parseIdentifier()
     )
 
-    if (!elementNode.value) {
-      throw new ParserError(`Invalid token: ${current()}`)
+    if (!value) {
+      throwUnexpected([
+        TokenChar.arrayStartToken,
+        TokenChar.objectStartToken,
+        TokenType.identifier
+      ])
     }
 
-    return elementNode
+    return {
+      type: AstNodeType.Element,
+      count,
+      value,
+      location: {
+        start: startLocation ?? clone(value.location.start),
+        end: clone(value.location.end)
+      }
+    }
   }
 
   function parseObject (): AstObjectNode {
-    if (!ensureAndSkip(TokenChar.objectStartToken)) {
+    if (!is(TokenChar.objectStartToken)) {
       return null
     }
 
-    const pairs: AstPairNode[] = []
+    const startLocation: TokenLocation = clone(current().location.start)
+    const properties: AstPropertyNode[] = []
+
+    // Skip start token `{`
+    next()
 
     while (current() && !is(TokenChar.objectEndToken)) {
-      pairs.push(parsePair())
+      properties.push(parseProperty())
     }
 
-    expectAndSkip(TokenChar.objectEndToken)
+    expect(TokenChar.objectEndToken)
+
+    const endLocation = clone(current().location.end)
+
+    // Skip end token `}`
+    next()
 
     return {
-      type: 'object',
-      pairs
+      type: AstNodeType.Object,
+      properties,
+      location: {
+        start: startLocation,
+        end: endLocation
+      }
     }
   }
 
-  function parsePair (): AstPairNode {
-    const key = parseIdent()
+  function parseProperty (): AstPropertyNode {
+    const key = parseIdentifier()
 
     if (!key) {
-      throwUnexpected()
+      throwUnexpected([TokenType.identifier])
     }
 
-    let value: AstPairNode['value']
+    let value: AstPropertyNode['value']
 
     if (!is(TokenChar.objectPairSeparator)) {
       // Copy key node
-      value = JSON.parse(JSON.stringify(key))
+      value = deepClone(key)
     } else {
       // Skip `:`
       next()
@@ -174,25 +228,33 @@ export function parse (tokens: Token[]) {
       value = (
         parseArray() ??
         parseObject() ??
-        parseIdent()
+        parseIdentifier()
       )
 
       if (!value) {
-        throwWithCodeFrame(`Unexpected token: ${current()}`)
+        throwUnexpected([
+          TokenChar.arrayStartToken,
+          TokenChar.objectStartToken,
+          TokenType.identifier
+        ])
       }
     }
 
     return {
-      type: 'pair',
+      type: AstNodeType.Property,
       key,
-      value
+      value,
+      location: {
+        start: clone(key.location.start),
+        end: clone(value.location.end)
+      }
     }
   }
 
-  function parseIdent (): AstIdentNode {
-    const token = tokens[index]
+  function parseIdentifier (): AstIdentifierNode {
+    const token = current()
 
-    if (token?.type !== TokenType.ident) {
+    if (token.type !== TokenType.identifier) {
       return null
     }
 
@@ -200,28 +262,27 @@ export function parse (tokens: Token[]) {
     next()
 
     return {
-      type: 'ident',
-      ident: (token.value as string).replace(TRIM_IDENTIFIER_REGEX, '')
+      type: AstNodeType.Identifier,
+      name: (token.value as string).replace(TRIM_IDENTIFIER_REGEX, ''),
+      location: deepClone(token.location)
     }
   }
 
   function expect (token: TokenChar) {
-    if (current() == null || current() === '') {
+    if (current().type === TokenType.EOF) {
       throw new ParserError('Unexpected EOF')
     }
 
     if (!is(token)) {
-      throwWithCodeFrame(`Unexpected token. Expecting '${token}' but got: ${current()}`)
+      throwUnexpected([token])
     }
   }
 
-  function throwUnexpected () {
-    throwWithCodeFrame(`Unexpected token: ${current()}`)
-  }
-
-  function expectAndSkip (token: TokenChar) {
-    expect(token)
-    next()
+  function throwUnexpected (expected?: string[]) {
+    throwWithCodeFrame(
+      `Unexpected token: ${current().value}` +
+      (expected ? `. Expecting ${expected.join(', ')}` : '')
+    )
   }
 
   function throwWithCodeFrame (message: string) {
@@ -232,20 +293,24 @@ export function parse (tokens: Token[]) {
     ].join('\n\n'))
   }
 
-  function ensureAndSkip (token: TokenChar) {
-    if (!is(token)) {
-      return false
-    }
+  function clone<T extends object> (obj: T): T {
+    return { ...obj }
+  }
 
-    return next()
+  function deepClone<T extends object> (obj: T): T {
+    return JSON.parse(
+      JSON.stringify(
+        obj
+      )
+    )
   }
 
   function is (value: string) {
-    return current() === value
+    return current().value === value
   }
 
   function current () {
-    return tokens[index]?.value
+    return tokens[index]
   }
 
   function next () {

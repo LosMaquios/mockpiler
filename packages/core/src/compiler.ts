@@ -4,9 +4,10 @@ import {
   AstArrayNode,
   AstElementNode,
   AstValueNode,
-  AstIdentNode,
+  AstIdentifierNode,
   AstObjectNode,
-  AstRootNode
+  AstRootNode,
+  AstNodeType
 } from './parser'
 
 export interface MockContext {
@@ -22,9 +23,9 @@ export function createCompiler (context: MockContext) {
     return compileRoot(rootNode)
 
     function compileRoot (node: AstRootNode) {
-      switch (node.type) {
-        case 'array': return compileArray(node)
-        case 'object': return compileObject(node)
+      switch (node.value.type) {
+        case AstNodeType.Array: return compileArray(node.value)
+        case AstNodeType.Object: return compileObject(node.value)
       }
     }
 
@@ -55,28 +56,28 @@ export function createCompiler (context: MockContext) {
 
     function compileValue (node: AstValueNode) {
       switch (node.type) {
-        case 'array': return compileArray(node)
-        case 'object': return compileObject(node)
-        case 'ident': return compileIdent(node)
+        case AstNodeType.Array: return compileArray(node)
+        case AstNodeType.Object: return compileObject(node)
+        case AstNodeType.Identifier: return compileIdent(node)
       }
     }
 
     function compileObject (node: AstObjectNode) {
       const result = {}
 
-      for (const pair of node.pairs) {
-        result[pair.key.ident] = compileValue(pair.value)
+      for (const property of node.properties) {
+        result[property.key.name] = compileValue(property.value)
       }
 
       return result
     }
 
-    function compileIdent ({ ident }: AstIdentNode) {
-      if (!(ident in context)) {
-        throw new Error(`Unknown context identifier: ${ident}`)
+    function compileIdent ({ name }: AstIdentifierNode) {
+      if (!(name in context)) {
+        throw new Error(`Unknown context identifier: ${name}`)
       }
 
-      const value = context[ident]
+      const value = context[name]
 
       return typeof value === 'function'
         ? value()

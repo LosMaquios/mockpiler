@@ -34,15 +34,11 @@ class CodeframeBuffer {
     for (let line = this.minLine; line <= this.maxLine; line++) {
       const lineIndicator = `${getPadding(maxLineLength - String(line).length)}${line}|`
 
-      if (!this.hasLine(line)) {
-        formattedCode.push(lineIndicator)
-      } else {
-        formattedCode.push(`${lineIndicator}${this.linesBuffer[line]}`)
-      }
+      formattedCode.push(lineIndicator + (this.linesBuffer[line] ?? ''))
 
       if (line === highlightLocation.start.line) {
         formattedCode.push(
-          getPadding(highlightLocation.start.column + maxLineLength) +
+          `${getPadding(maxLineLength)}|${getPadding(highlightLocation.start.column - 1)}` +
           getLineIndicator(highlightLocation.end.column - highlightLocation.start.column)
         )
       }

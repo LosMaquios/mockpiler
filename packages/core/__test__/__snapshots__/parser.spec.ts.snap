@@ -2,82 +2,295 @@
 
 exports[`parser should parse valid token sequence 1`] = `
 Object {
-  "pairs": Array [
-    Object {
-      "key": Object {
-        "ident": "name",
-        "type": "ident",
+  "location": Object {
+    "end": Object {
+      "column": 1,
+      "line": 13,
+    },
+    "start": Object {
+      "column": 1,
+      "line": 1,
+    },
+  },
+  "type": "Root",
+  "value": Object {
+    "location": Object {
+      "end": Object {
+        "column": 4,
+        "line": 12,
       },
-      "type": "pair",
-      "value": Object {
-        "ident": "name",
-        "type": "ident",
+      "start": Object {
+        "column": 3,
+        "line": 2,
       },
     },
-    Object {
-      "key": Object {
-        "ident": "age",
-        "type": "ident",
-      },
-      "type": "pair",
-      "value": Object {
-        "ident": "age",
-        "type": "ident",
-      },
-    },
-    Object {
-      "key": Object {
-        "ident": "matches",
-        "type": "ident",
-      },
-      "type": "pair",
-      "value": Object {
-        "elements": Array [
-          Object {
-            "count": 1,
-            "type": "element",
-            "value": Object {
-              "ident": "person",
-              "type": "ident",
+    "properties": Array [
+      Object {
+        "key": Object {
+          "location": Object {
+            "end": Object {
+              "column": 9,
+              "line": 3,
+            },
+            "start": Object {
+              "column": 5,
+              "line": 3,
             },
           },
-          Object {
-            "count": 3,
-            "type": "element",
-            "value": Object {
-              "pairs": Array [
-                Object {
-                  "key": Object {
-                    "ident": "name",
-                    "type": "ident",
-                  },
-                  "type": "pair",
-                  "value": Object {
-                    "ident": "name",
-                    "type": "ident",
-                  },
-                },
-                Object {
-                  "key": Object {
-                    "ident": "age",
-                    "type": "ident",
-                  },
-                  "type": "pair",
-                  "value": Object {
-                    "ident": "age",
-                    "type": "ident",
-                  },
-                },
-              ],
-              "type": "object",
+          "name": "name",
+          "type": "Identifier",
+        },
+        "location": Object {
+          "end": Object {
+            "column": 9,
+            "line": 3,
+          },
+          "start": Object {
+            "column": 5,
+            "line": 3,
+          },
+        },
+        "type": "Property",
+        "value": Object {
+          "location": Object {
+            "end": Object {
+              "column": 9,
+              "line": 3,
+            },
+            "start": Object {
+              "column": 5,
+              "line": 3,
             },
           },
-        ],
-        "type": "array",
+          "name": "name",
+          "type": "Identifier",
+        },
       },
-    },
-  ],
-  "type": "object",
+      Object {
+        "key": Object {
+          "location": Object {
+            "end": Object {
+              "column": 8,
+              "line": 4,
+            },
+            "start": Object {
+              "column": 5,
+              "line": 4,
+            },
+          },
+          "name": "age",
+          "type": "Identifier",
+        },
+        "location": Object {
+          "end": Object {
+            "column": 8,
+            "line": 4,
+          },
+          "start": Object {
+            "column": 5,
+            "line": 4,
+          },
+        },
+        "type": "Property",
+        "value": Object {
+          "location": Object {
+            "end": Object {
+              "column": 8,
+              "line": 4,
+            },
+            "start": Object {
+              "column": 5,
+              "line": 4,
+            },
+          },
+          "name": "age",
+          "type": "Identifier",
+        },
+      },
+      Object {
+        "key": Object {
+          "location": Object {
+            "end": Object {
+              "column": 12,
+              "line": 5,
+            },
+            "start": Object {
+              "column": 5,
+              "line": 5,
+            },
+          },
+          "name": "matches",
+          "type": "Identifier",
+        },
+        "location": Object {
+          "end": Object {
+            "column": 6,
+            "line": 11,
+          },
+          "start": Object {
+            "column": 5,
+            "line": 5,
+          },
+        },
+        "type": "Property",
+        "value": Object {
+          "elements": Array [
+            Object {
+              "count": 1,
+              "location": Object {
+                "end": Object {
+                  "column": 13,
+                  "line": 6,
+                },
+                "start": Object {
+                  "column": 7,
+                  "line": 6,
+                },
+              },
+              "type": "Element",
+              "value": Object {
+                "location": Object {
+                  "end": Object {
+                    "column": 13,
+                    "line": 6,
+                  },
+                  "start": Object {
+                    "column": 7,
+                    "line": 6,
+                  },
+                },
+                "name": "person",
+                "type": "Identifier",
+              },
+            },
+            Object {
+              "count": 3,
+              "location": Object {
+                "end": Object {
+                  "column": 8,
+                  "line": 10,
+                },
+                "start": Object {
+                  "column": 7,
+                  "line": 7,
+                },
+              },
+              "type": "Element",
+              "value": Object {
+                "location": Object {
+                  "end": Object {
+                    "column": 8,
+                    "line": 10,
+                  },
+                  "start": Object {
+                    "column": 11,
+                    "line": 7,
+                  },
+                },
+                "properties": Array [
+                  Object {
+                    "key": Object {
+                      "location": Object {
+                        "end": Object {
+                          "column": 13,
+                          "line": 8,
+                        },
+                        "start": Object {
+                          "column": 9,
+                          "line": 8,
+                        },
+                      },
+                      "name": "name",
+                      "type": "Identifier",
+                    },
+                    "location": Object {
+                      "end": Object {
+                        "column": 13,
+                        "line": 8,
+                      },
+                      "start": Object {
+                        "column": 9,
+                        "line": 8,
+                      },
+                    },
+                    "type": "Property",
+                    "value": Object {
+                      "location": Object {
+                        "end": Object {
+                          "column": 13,
+                          "line": 8,
+                        },
+                        "start": Object {
+                          "column": 9,
+                          "line": 8,
+                        },
+                      },
+                      "name": "name",
+                      "type": "Identifier",
+                    },
+                  },
+                  Object {
+                    "key": Object {
+                      "location": Object {
+                        "end": Object {
+                          "column": 12,
+                          "line": 9,
+                        },
+                        "start": Object {
+                          "column": 9,
+                          "line": 9,
+                        },
+                      },
+                      "name": "age",
+                      "type": "Identifier",
+                    },
+                    "location": Object {
+                      "end": Object {
+                        "column": 12,
+                        "line": 9,
+                      },
+                      "start": Object {
+                        "column": 9,
+                        "line": 9,
+                      },
+                    },
+                    "type": "Property",
+                    "value": Object {
+                      "location": Object {
+                        "end": Object {
+                          "column": 12,
+                          "line": 9,
+                        },
+                        "start": Object {
+                          "column": 9,
+                          "line": 9,
+                        },
+                      },
+                      "name": "age",
+                      "type": "Identifier",
+                    },
+                  },
+                ],
+                "type": "Object",
+              },
+            },
+          ],
+          "location": Object {
+            "end": Object {
+              "column": 6,
+              "line": 11,
+            },
+            "start": Object {
+              "column": 14,
+              "line": 5,
+            },
+          },
+          "type": "Array",
+        },
+      },
+    ],
+    "type": "Object",
+  },
 }
 `;
 
@@ -87,9 +300,9 @@ exports[`parser should throw on invalid token 1`] = `
 1|
 2|  {
 3|    test]
-          ^
+ |        ^
 4|  }
 5|
 
-Unexpected token: ]"
+Unexpected token: ]. Expecting identifier"
 `;
