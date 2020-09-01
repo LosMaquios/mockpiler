@@ -80,7 +80,7 @@ export function createCompiler (context: MockContext) {
       const value = context[name]
 
       return typeof value === 'function'
-        ? value()
+        ? value.call(context)
         : value
     }
   }

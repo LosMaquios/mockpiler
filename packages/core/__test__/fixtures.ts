@@ -5,8 +5,8 @@ export const validContext = {
   },
   person () {
     return {
-      name: validContext.name,
-      age: validContext.age()
+      name: this.name,
+      age: this.age()
     }
   }
 }
