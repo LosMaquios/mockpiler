@@ -149,7 +149,7 @@ export function scan (input: string): Token[] {
     } else if (is(IGNORED_CHARS)) {
       ++index
     } else {
-      throw new LexerError(`Unknown token: ${peek()}`)
+      throw new LexerError(`Unknown token '${peek()}' at ${line}:${column}`)
     }
   }
 

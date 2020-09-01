@@ -13,6 +13,6 @@ describe('lexer', () => {
   })
 
   test('should throw on unknown token', () => {
-    expect(() => scan(unknownTokenCode)).toThrowError(new LexerError('Unknown token: ,'))
+    expect(() => scan(unknownTokenCode)).toThrowError(new LexerError('Unknown token \',\' at 3:9'))
   })
 })
