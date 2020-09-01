@@ -297,12 +297,12 @@ Object {
 exports[`parser should throw on invalid token 1`] = `
 "
 
-1|
-2|  {
-3|    test]
- |        ^
-4|  }
-5|
+  1|
+  2|  {
+> 3|    test]
+   |        ^
+  4|  }
+  5|
 
 Unexpected token: ]. Expecting identifier"
 `;

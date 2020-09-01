@@ -1,7 +1,28 @@
 import { Token } from './lexer'
 
 const PADDING_CHAR = ' '
-const INDICATOR_CHAR = '^'
+const LINE_SEPARATOR = '|'
+
+/**
+ * Indicator for code fragments:
+ * 
+ *   wrong-fragment
+ *   ^^^^^^^^^^^^^^
+ */
+const FRAGMENT_INDICATOR_CHAR = '^'
+
+/**
+ * Indicator for lines:
+ * 
+ *  > 1|
+ *    2|
+ *    3|
+ */
+const LINE_INDICATOR_CHAR = '>'
+
+/**
+ * Max lines above and below the highlighted line
+ */
 const MAX_LINES = 4
 
 class CodeframeBuffer {
@@ -30,16 +51,24 @@ class CodeframeBuffer {
   getFormattedOutput (highlightLocation: Token['location']) {
     const formattedCode = []
     const maxLineLength = String(this.maxLine).length
+    const lineIndicatorSpacing = LINE_INDICATOR_CHAR.length + 1
 
     for (let line = this.minLine; line <= this.maxLine; line++) {
-      const lineIndicator = `${getPadding(maxLineLength - String(line).length)}${line}|`
+      const inHighlightLine = line === highlightLocation.start.line
 
-      formattedCode.push(lineIndicator + (this.linesBuffer[line] ?? ''))
+      formattedCode.push(
+        (inHighlightLine ? LINE_INDICATOR_CHAR : '') +
+        getPadding((inHighlightLine ? LINE_INDICATOR_CHAR.length : lineIndicatorSpacing) + maxLineLength - String(line).length) +
+        line + LINE_SEPARATOR +
+        (this.linesBuffer[line] ?? '')
+      )
 
-      if (line === highlightLocation.start.line) {
+      if (inHighlightLine) {
         formattedCode.push(
-          `${getPadding(maxLineLength)}|${getPadding(highlightLocation.start.column - 1)}` +
-          getLineIndicator(highlightLocation.end.column - highlightLocation.start.column)
+          getPadding(maxLineLength + lineIndicatorSpacing) +
+          LINE_SEPARATOR + 
+          getPadding(highlightLocation.start.column - 1) +
+          getFragmentIndicator(highlightLocation.end.column - highlightLocation.start.column)
         )
       }
     }
@@ -128,8 +157,8 @@ export function generateCodeframe (
   return buffer.getFormattedOutput(highlightLocation)
 }
 
-function getLineIndicator (size: number) {
-  return INDICATOR_CHAR.repeat(size)
+function getFragmentIndicator (size: number) {
+  return FRAGMENT_INDICATOR_CHAR.repeat(size)
 }
 
 function getPadding (size: number) {
