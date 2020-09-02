@@ -20,6 +20,14 @@ Object {
       "age": 40,
       "name": "Test",
     },
+    Object {
+      "age": 40,
+      "name": "Test",
+    },
+    Object {
+      "age": 40,
+      "name": "Test",
+    },
   ],
   "name": "Test",
 }

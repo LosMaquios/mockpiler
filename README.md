@@ -70,4 +70,4 @@ console.log(people)
 
   - [x] Implement a lexer for codeframes
   - [ ] Make an integration with libs like [Faker.js](https://github.com/marak/Faker.js/)
-  - [ ] Support for spread operators `e.g. { ...spread }`
+  - [x] Support for spread operators `e.g. { ...spread }`

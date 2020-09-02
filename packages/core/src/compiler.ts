@@ -7,7 +7,8 @@ import {
   AstIdentifierNode,
   AstObjectNode,
   AstRootNode,
-  AstNodeType
+  AstNodeType,
+  AstSpreadNode
 } from './parser'
 
 export interface MockContext {
@@ -33,14 +34,25 @@ export function createCompiler (context: MockContext) {
       const result = []
 
       for (const element of node.elements) {
-        result.push(...compileElement(element))   
+        if (element.type === AstNodeType.Spread) {
+          compileElementSpread(element, result)
+        } else {
+          compileElement(element, result)
+        }
       }
 
       return result
     }
 
-    function compileElement (node: AstElementNode) {
-      const values = []
+    function compileElementSpread (node: AstSpreadNode, values: any[]) {
+      const result = compileIdent(node.identifier)
+
+      for (const value of result) {
+        values.push(value)
+      }
+    }
+
+    function compileElement (node: AstElementNode, values: any[]) {
       let count = typeof node.count !== 'number'
         ? compileIdent(node.count)
         : node.count
@@ -50,8 +62,28 @@ export function createCompiler (context: MockContext) {
           compileValue(node.value)
         )
       }
+    }
 
-      return values
+    function compileObject (node: AstObjectNode) {
+      const result = {}
+
+      for (const property of node.properties) {
+        if (property.type === AstNodeType.Spread) {
+          compilePropertySpread(property, result)
+        } else {
+          result[property.key.name] = compileValue(property.value)
+        }
+      }
+
+      return result
+    }
+
+    function compilePropertySpread (node: AstSpreadNode, values: object) {
+      const result = compileIdent(node.identifier)
+
+      for (const key of Object.keys(result)) {
+        values[key] = result[key]
+      }
     }
 
     function compileValue (node: AstValueNode) {
@@ -60,16 +92,6 @@ export function createCompiler (context: MockContext) {
         case AstNodeType.Object: return compileObject(node)
         case AstNodeType.Identifier: return compileIdent(node)
       }
-    }
-
-    function compileObject (node: AstObjectNode) {
-      const result = {}
-
-      for (const property of node.properties) {
-        result[property.key.name] = compileValue(property.value)
-      }
-
-      return result
     }
 
     function compileIdent ({ name }: AstIdentifierNode) {

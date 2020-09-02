@@ -9,6 +9,7 @@ import { generateCodeframe } from './codeframe'
 export enum AstNodeType {
   Root = 'Root',
   Identifier = 'Identifier',
+  Spread = 'Spread',
   Object = 'Object',
   Array = 'Array',
   Property = 'Property',
@@ -33,7 +34,7 @@ export interface AstIdentifierNode extends AstNode {
 
 export interface AstArrayNode extends AstNode {
   type: AstNodeType.Array
-  elements: AstElementNode[]
+  elements: Array<AstSpreadNode | AstElementNode>
 }
 
 export interface AstElementNode extends AstNode {
@@ -44,12 +45,17 @@ export interface AstElementNode extends AstNode {
 
 export interface AstObjectNode extends AstNode {
   type: AstNodeType.Object
-  properties: AstPropertyNode[]
+  properties: Array<AstSpreadNode | AstPropertyNode>
 }
 
 export interface AstRootNode extends AstNode {
   type: AstNodeType.Root
   value: AstObjectOrArrayNode
+}
+
+export interface AstSpreadNode extends AstNode {
+  type: AstNodeType.Spread
+  identifier: AstIdentifierNode
 }
 
 type AstObjectOrArrayNode = AstObjectNode | AstArrayNode
@@ -95,13 +101,16 @@ export function parse (tokens: Token[]) {
     }
 
     const startLocation: TokenLocation = clone(current().location.start)
-    const elements: AstElementNode[] = []
+    const elements: AstArrayNode['elements'] = []
 
     // Skip start token `[`
     next()
 
     while (current() && !is(TokenChar.arrayEndToken)) {
-      elements.push(parseElement())
+      elements.push(
+        parseSpread() ??
+        parseElement()
+      )
     }
 
     expect(TokenChar.arrayEndToken)
@@ -183,13 +192,16 @@ export function parse (tokens: Token[]) {
     }
 
     const startLocation: TokenLocation = clone(current().location.start)
-    const properties: AstPropertyNode[] = []
+    const properties: AstObjectNode['properties'] = []
 
     // Skip start token `{`
     next()
 
     while (current() && !is(TokenChar.objectEndToken)) {
-      properties.push(parseProperty())
+      properties.push(
+        parseSpread() ??
+        parseProperty()
+      )
     }
 
     expect(TokenChar.objectEndToken)
@@ -247,6 +259,32 @@ export function parse (tokens: Token[]) {
       location: {
         start: clone(key.location.start),
         end: clone(value.location.end)
+      }
+    }
+  }
+
+  function parseSpread (): AstSpreadNode {
+    const spreadToken = current()
+
+    if (spreadToken.type !== TokenType.spread) {
+      return null
+    }
+
+    // Skip spread token
+    next()
+
+    const identifier = parseIdentifier()
+
+    if (!identifier) {
+      throwUnexpected([TokenType.identifier])
+    }
+
+    return {
+      type: AstNodeType.Spread,
+      identifier,
+      location: {
+        start: clone(spreadToken.location.start),
+        end: clone(identifier.location.end)
       }
     }
   }

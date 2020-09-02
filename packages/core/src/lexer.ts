@@ -26,11 +26,17 @@ export enum TokenChar {
   /**
    * Escape tokens
    */
-  escapeToken = '\\'
+  escapeToken = '\\',
+
+  /**
+   * Spread tokens
+   */
+  spreadToken = '.'
 }
 
 export enum TokenType {
   identifier = 'identifier',
+  spread = 'spread',
   object = 'object',
   array = 'array',
   count = 'count',
@@ -78,6 +84,7 @@ const COUNT_DIGIT_REGEX = /\d/
 const LINE_CHAR = '\n'
 const TAB_CHAR = '\t'
 const SPACE_CHAR = ' '
+const SPREAD_SIZE = 3
 
 /**
  * Chars to be ignored during scanning
@@ -122,6 +129,27 @@ export function scan (input: string): Token[] {
   while (index < length) {
     if (is(ARRAY_TOKENS)) {
       tokens.push(consumeToken(TokenType.array))
+    } else if (is(TokenChar.spreadToken)) {
+      if (
+        !is(TokenChar.spreadToken, 1) ||
+        !is(TokenChar.spreadToken, 2)
+      ) {
+        throwUnexpected()
+      }
+
+      const startLocation = getLocation()
+
+      index += SPREAD_SIZE
+      column += SPREAD_SIZE
+
+      tokens.push({
+        type: TokenType.spread,
+        value: TokenChar.spreadToken.repeat(SPREAD_SIZE),
+        location: {
+          start: startLocation,
+          end: getLocation()
+        }
+      })
     } else if (is(OBJECT_TOKENS)) {
       tokens.push(consumeToken(TokenType.object))
     } else if (is(COUNT_TOKENS)) {
@@ -149,7 +177,7 @@ export function scan (input: string): Token[] {
     } else if (is(IGNORED_CHARS)) {
       ++index
     } else {
-      throw new LexerError(`Unknown token '${peek()}' at ${line}:${column}`)
+      throwUnexpected()
     }
   }
 
@@ -239,12 +267,16 @@ export function scan (input: string): Token[] {
     }
   }
 
-  function is (expectation: RegExp | string | string[]) {
+  function is (expectation: RegExp | string | string[], offset?: number) {
     return typeof expectation === 'string'
-      ? peek() === expectation
+      ? peek(offset) === expectation
       : Array.isArray(expectation)
-      ? expectation.indexOf(peek() as any) > -1
-      : expectation.test(peek())
+      ? expectation.indexOf(peek(offset) as any) > -1
+      : expectation.test(peek(offset))
+  }
+
+  function throwUnexpected () {
+    throw new LexerError(`Unknown token '${peek()}' at ${line}:${column}`)
   }
 
   function advance () {
@@ -254,7 +286,7 @@ export function scan (input: string): Token[] {
     return peek()
   }
 
-  function peek () {
-    return input[index]
+  function peek (offset = 0) {
+    return input[index + offset]
   }
 }

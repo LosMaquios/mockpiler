@@ -5,7 +5,7 @@ Object {
   "location": Object {
     "end": Object {
       "column": 1,
-      "line": 13,
+      "line": 14,
     },
     "start": Object {
       "column": 1,
@@ -17,7 +17,7 @@ Object {
     "location": Object {
       "end": Object {
         "column": 4,
-        "line": 12,
+        "line": 13,
       },
       "start": Object {
         "column": 3,
@@ -125,7 +125,7 @@ Object {
         "location": Object {
           "end": Object {
             "column": 6,
-            "line": 11,
+            "line": 12,
           },
           "start": Object {
             "column": 5,
@@ -164,15 +164,42 @@ Object {
               },
             },
             Object {
-              "count": 3,
+              "identifier": Object {
+                "location": Object {
+                  "end": Object {
+                    "column": 16,
+                    "line": 7,
+                  },
+                  "start": Object {
+                    "column": 10,
+                    "line": 7,
+                  },
+                },
+                "name": "people",
+                "type": "Identifier",
+              },
               "location": Object {
                 "end": Object {
-                  "column": 8,
-                  "line": 10,
+                  "column": 16,
+                  "line": 7,
                 },
                 "start": Object {
                   "column": 7,
                   "line": 7,
+                },
+              },
+              "type": "Spread",
+            },
+            Object {
+              "count": 3,
+              "location": Object {
+                "end": Object {
+                  "column": 8,
+                  "line": 11,
+                },
+                "start": Object {
+                  "column": 7,
+                  "line": 8,
                 },
               },
               "type": "Element",
@@ -180,11 +207,11 @@ Object {
                 "location": Object {
                   "end": Object {
                     "column": 8,
-                    "line": 10,
+                    "line": 11,
                   },
                   "start": Object {
                     "column": 11,
-                    "line": 7,
+                    "line": 8,
                   },
                 },
                 "properties": Array [
@@ -193,11 +220,11 @@ Object {
                       "location": Object {
                         "end": Object {
                           "column": 13,
-                          "line": 8,
+                          "line": 9,
                         },
                         "start": Object {
                           "column": 9,
-                          "line": 8,
+                          "line": 9,
                         },
                       },
                       "name": "name",
@@ -206,11 +233,11 @@ Object {
                     "location": Object {
                       "end": Object {
                         "column": 13,
-                        "line": 8,
+                        "line": 9,
                       },
                       "start": Object {
                         "column": 9,
-                        "line": 8,
+                        "line": 9,
                       },
                     },
                     "type": "Property",
@@ -218,11 +245,11 @@ Object {
                       "location": Object {
                         "end": Object {
                           "column": 13,
-                          "line": 8,
+                          "line": 9,
                         },
                         "start": Object {
                           "column": 9,
-                          "line": 8,
+                          "line": 9,
                         },
                       },
                       "name": "name",
@@ -234,11 +261,11 @@ Object {
                       "location": Object {
                         "end": Object {
                           "column": 12,
-                          "line": 9,
+                          "line": 10,
                         },
                         "start": Object {
                           "column": 9,
-                          "line": 9,
+                          "line": 10,
                         },
                       },
                       "name": "age",
@@ -247,11 +274,11 @@ Object {
                     "location": Object {
                       "end": Object {
                         "column": 12,
-                        "line": 9,
+                        "line": 10,
                       },
                       "start": Object {
                         "column": 9,
-                        "line": 9,
+                        "line": 10,
                       },
                     },
                     "type": "Property",
@@ -259,11 +286,11 @@ Object {
                       "location": Object {
                         "end": Object {
                           "column": 12,
-                          "line": 9,
+                          "line": 10,
                         },
                         "start": Object {
                           "column": 9,
-                          "line": 9,
+                          "line": 10,
                         },
                       },
                       "name": "age",
@@ -278,7 +305,7 @@ Object {
           "location": Object {
             "end": Object {
               "column": 6,
-              "line": 11,
+              "line": 12,
             },
             "start": Object {
               "column": 14,

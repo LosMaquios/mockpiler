@@ -8,6 +8,12 @@ export const validContext = {
       name: this.name,
       age: this.age()
     }
+  },
+  people () {
+    return [
+      this.person(),
+      this.person()
+    ]
   }
 }
 
@@ -17,6 +23,7 @@ export const validCode = `
     age
     matches: [
       person
+      ...people
       (3) {
         name
         age

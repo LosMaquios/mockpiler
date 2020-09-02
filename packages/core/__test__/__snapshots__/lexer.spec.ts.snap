@@ -103,12 +103,40 @@ Array [
   Object {
     "location": Object {
       "end": Object {
-        "column": 8,
+        "column": 10,
         "line": 7,
       },
       "start": Object {
         "column": 7,
         "line": 7,
+      },
+    },
+    "type": "spread",
+    "value": "...",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 16,
+        "line": 7,
+      },
+      "start": Object {
+        "column": 10,
+        "line": 7,
+      },
+    },
+    "type": "identifier",
+    "value": "people",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 8,
+        "line": 8,
+      },
+      "start": Object {
+        "column": 7,
+        "line": 8,
       },
     },
     "type": "count",
@@ -118,11 +146,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 9,
-        "line": 7,
+        "line": 8,
       },
       "start": Object {
         "column": 8,
-        "line": 7,
+        "line": 8,
       },
     },
     "type": "countNumber",
@@ -132,11 +160,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 10,
-        "line": 7,
+        "line": 8,
       },
       "start": Object {
         "column": 9,
-        "line": 7,
+        "line": 8,
       },
     },
     "type": "count",
@@ -146,11 +174,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 12,
-        "line": 7,
+        "line": 8,
       },
       "start": Object {
         "column": 11,
-        "line": 7,
+        "line": 8,
       },
     },
     "type": "object",
@@ -160,11 +188,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 13,
-        "line": 8,
+        "line": 9,
       },
       "start": Object {
         "column": 9,
-        "line": 8,
+        "line": 9,
       },
     },
     "type": "identifier",
@@ -174,11 +202,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 12,
-        "line": 9,
+        "line": 10,
       },
       "start": Object {
         "column": 9,
-        "line": 9,
+        "line": 10,
       },
     },
     "type": "identifier",
@@ -188,11 +216,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 8,
-        "line": 10,
+        "line": 11,
       },
       "start": Object {
         "column": 7,
-        "line": 10,
+        "line": 11,
       },
     },
     "type": "object",
@@ -202,11 +230,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 6,
-        "line": 11,
+        "line": 12,
       },
       "start": Object {
         "column": 5,
-        "line": 11,
+        "line": 12,
       },
     },
     "type": "array",
@@ -216,11 +244,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 4,
-        "line": 12,
+        "line": 13,
       },
       "start": Object {
         "column": 3,
-        "line": 12,
+        "line": 13,
       },
     },
     "type": "object",
@@ -230,11 +258,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 1,
-        "line": 13,
+        "line": 14,
       },
       "start": Object {
         "column": 1,
-        "line": 13,
+        "line": 14,
       },
     },
     "type": "EOF",
