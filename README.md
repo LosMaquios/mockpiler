@@ -38,6 +38,20 @@ const people = mock(context)`
   ]
 `
 
+// or using interpolation
+
+const people = mock`
+  [
+    (2) {
+      name: ${context.name}
+      age: ${context.randomAge}
+      favoriteFruits: [
+        (3) ${context.randomFruit}
+      ]
+    }
+  ]
+`
+
 console.log(people)
 
 /**

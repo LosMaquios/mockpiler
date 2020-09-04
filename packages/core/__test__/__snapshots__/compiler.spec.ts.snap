@@ -1,5 +1,17 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`compiler should compile interpolated code 1`] = `
+Object {
+  "age": 30,
+  "favoriteFruit": "apple",
+  "fruits": Array [
+    "apple",
+    "strawberry",
+  ],
+  "name": "Jhon doe",
+}
+`;
+
 exports[`compiler should compile valid code 1`] = `
 Object {
   "age": 40,
