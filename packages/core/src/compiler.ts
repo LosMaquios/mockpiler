@@ -22,9 +22,7 @@ class RawValue {
     public raw: any) {}
 }
 
-const cleanUnwantedChars = (str: string) => str
-  .replace(/=+$/, '')
-  .replace(/\d+/g, '')
+const cleanUnwantedChars = (str: string) => str.replace(/\d+|=+$/g, '')
 
 const toBase64 = typeof window === 'undefined'
   ? (str: any) => cleanUnwantedChars(Buffer.from(str.toString()).toString('base64'))
