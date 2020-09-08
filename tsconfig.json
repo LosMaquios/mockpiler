@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ESNext"
+    "target": "ES5"
   },
   "exclude": [
     "**/__test__"
