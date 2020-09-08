@@ -1,2 +1,5 @@
 # Ignore NPM packages
 node_modules/
+
+# Ignore distribution files
+dist/

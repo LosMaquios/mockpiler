@@ -1,0 +1,14 @@
+{
+  "name": "@mockpiler/core",
+  "version": "0.1.0",
+  "description": "Mockpiler Core",
+  "main": "dist/index.js",
+  "module": "dist/mockpiler.esm.js",
+  "repository": "https://github.com/LosMaquios/mockpiler",
+  "author": "Camilo Rodríguez <aeromotiondesign@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "build": "tsdx build --name Mockpiler"
+  }
+}

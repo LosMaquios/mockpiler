@@ -1,4 +1,4 @@
-name: MockPiler CI
+name: Build and test
 
 on: [push, pull_request]
 
@@ -16,7 +16,8 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm i
-    - run: npm run test:ci
+    - run: yarn
+    - run: yarn build
+    - run: yarn test:ci
       env:
         CI: true
