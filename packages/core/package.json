@@ -8,6 +8,9 @@
   "author": "Camilo Rodríguez <aeromotiondesign@gmail.com>",
   "license": "MIT",
   "private": false,
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsdx build --name Mockpiler"
   }
