@@ -2,7 +2,17 @@
 
   Generate mock data using a dead simple JSON-like language.
 
-  **Status:** Currently, it's just an experiment (with bad-written code)
+  **Support:** It should work for any JavaScript runtime like `Deno`, `Node.js` and `browsers`.
+
+## Installation
+
+```bash
+$ npm install @mockpiler/core
+
+# using yarn
+
+$ yarn add @mockpiler/core
+```
 
 ## Example
 
