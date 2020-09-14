@@ -10,6 +10,8 @@ const DEFAULT_MOCKS_ROOT_PATH = path.resolve(
   '.mocks'
 )
 
+const FALLBACK_MOCK_FILENAME = '__fb'
+
 const context = {
   title: 'Server test',
   serverStatus: 200,
@@ -55,19 +57,37 @@ const server = http.createServer((req, res) => {
 function resolveMock (mockPath: string) {
   let mockFileContent: string
 
+  if (mockPath.endsWith('/')) {
+    mockPath += 'index'
+  }
+
+  mockFileContent = resolveMockFile(mockPath)
+
+  // Resolve fallback content
+  if (!mockFileContent) {
+    mockFileContent = resolveMockFile(
+      mockPath.replace(/[^\/]+$/, FALLBACK_MOCK_FILENAME)
+    )
+  }
+
+  return mockFileContent 
+    ? mock`${raw(mockFileContent)}`
+    : null
+}
+
+function resolveMockFile (mockPath: string) {
   try {
-    mockFileContent = fs.readFileSync(
-      path.resolve(DEFAULT_MOCKS_ROOT_PATH, `.${mockPath}${mockPath.endsWith('/') ? 'index' : ''}.mock`), 
+    return fs.readFileSync(
+      path.resolve(DEFAULT_MOCKS_ROOT_PATH, `.${mockPath}.mock`),
       'utf8'
     )
   } catch (error) {
-    console.error(error)
+    if (error.code !== 'ENOENT') {
+      console.error(error)
+    }
+
     return null
   }
-
-  return mock`${
-    raw(mockFileContent)
-  }`
 }
 
 server

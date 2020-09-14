@@ -1,0 +1,7 @@
+{
+  name
+  age
+  info: {
+    status: serverStatus
+  }
+}
