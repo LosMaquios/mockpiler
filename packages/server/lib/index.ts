@@ -1,3 +1,4 @@
+import { URL } from 'url'
 import path from 'path'
 import fs from 'fs'
 import http from 'http'
@@ -29,7 +30,7 @@ const mockCache = new LRUCache<string, string>({
 })
 
 const server = http.createServer((req, res) => {
-  const mockPath = req.url!
+  const { pathname: mockPath } = new URL(req.url!, 'file:')
   const cached = mockCache.get(mockPath)
 
   res.setHeader('Content-Type', 'application/json')
