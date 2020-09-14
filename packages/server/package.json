@@ -1,0 +1,23 @@
+{
+  "name": "@mockpiler/server",
+  "version": "0.1.0",
+  "description": "Mock server",
+  "main": "dist/index.js",
+  "repository": "https://github.com/LosMaquios/mockpiler",
+  "author": "Camilo Rodríguez <aeromotiondesign@gmail.com>",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "build": "tsdx build --entry lib/index.ts",
+    "serve": "yarn build && node ./dist/index.js"
+  },
+  "dependencies": {
+    "@mockpiler/core": "^0.1.0",
+    "lru-cache": "^6.0.0",
+    "ms": "^2.1.2"
+  },
+  "devDependencies": {
+    "@types/lru-cache": "^5.1.0",
+    "@types/ms": "^0.7.31"
+  }
+}

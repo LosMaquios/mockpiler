@@ -12,6 +12,6 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsdx build --name Mockpiler"
+    "build": "tsdx build --entry src/index.ts --name Mockpiler"
   }
 }
