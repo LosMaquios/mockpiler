@@ -1,98 +1,99 @@
-import { URL } from 'url'
-import path from 'path'
-import fs from 'fs'
-import http from 'http'
 import ms from 'ms'
 import LRUCache from 'lru-cache'
 import createMockpiler, { raw } from '@mockpiler/core'
+import { MockContext } from '@mockpiler/core/dist/compiler'
 
-const DEFAULT_MOCKS_ROOT_PATH = path.resolve(
-  process.cwd(),
-  '.mocks'
-)
+export interface MockResolverOptions {
+  /**
+   * Default mocks root path
+   */
+  rootPath: string
 
-const FALLBACK_MOCK_FILENAME = '__fb'
+  /**
+   * Fallback mock filename
+   */
+  fallback?: string
 
-const context = {
-  title: 'Server test',
-  serverStatus: 200,
-  name: 'John Doe',
-  age () {
-    return Math.floor(Math.random() * 100)
+  /**
+   * Cache config
+   * 
+   * `false` disables cache
+   * 
+   * @see https://github.com/isaacs/node-lru-cache#options
+   */
+  cache?: false | {
+    max?: number
+
+    /**
+     * Human-readable time expression
+     * 
+     * @see https://github.com/vercel/ms#examples
+     */
+    maxAge?: string
   }
+
+  /**
+   * File content resolver
+   */
+  resolveMockFile: (mockPath: string) => string | null
+
+  /**
+   * Mock context
+   */
+  context: MockContext
 }
 
-const mock = createMockpiler(context)
+const DEFAULT_FALLBACK_MOCK_FILENAME = '__fb'
 
-const mockCache = new LRUCache<string, string>({
-  max: 100,
-  maxAge: ms('1h')
-})
+export function createMockResolver (options: MockResolverOptions) {
+  let cache: LRUCache<string, string>
+  const compileMock = createMockpiler(options.context)
 
-const server = http.createServer((req, res) => {
-  const { pathname: mockPath } = new URL(req.url!, 'file:')
-  const cached = mockCache.get(mockPath)
-
-  res.setHeader('Content-Type', 'application/json')
-
-  // Resolve with cached data
-  if (cached) {
-    console.log('Found mock in cache:', mockPath)
-    return res.end(cached)
+  if (options.cache !== false) {
+    cache = new LRUCache({
+      max: options.cache?.max ?? 100,
+      maxAge: ms(options.cache?.maxAge ?? '1h')
+    })
   }
 
-  const resolvedMock = resolveMock(mockPath)
+  return (mockPath: string) => {
+    const cached = cache && cache.get(mockPath)
 
-  if (!resolvedMock) {
-    res.statusCode = 404
-    return res.end()
-  }
-
-  const stringifiedMock = JSON.stringify(resolvedMock)
-
-  mockCache.set(mockPath, stringifiedMock)
-
-  res.end(stringifiedMock)
-})
-
-function resolveMock (mockPath: string) {
-  let mockFileContent: string
-
-  if (mockPath.endsWith('/')) {
-    mockPath += 'index'
-  }
-
-  mockFileContent = resolveMockFile(mockPath)
-
-  // Resolve fallback content
-  if (!mockFileContent) {
-    mockFileContent = resolveMockFile(
-      mockPath.replace(/[^\/]+$/, FALLBACK_MOCK_FILENAME)
-    )
-  }
-
-  return mockFileContent 
-    ? mock`${raw(mockFileContent)}`
-    : null
-}
-
-function resolveMockFile (mockPath: string) {
-  try {
-    return fs.readFileSync(
-      path.resolve(DEFAULT_MOCKS_ROOT_PATH, `.${mockPath}.mock`),
-      'utf8'
-    )
-  } catch (error) {
-    if (error.code !== 'ENOENT') {
-      console.error(error)
+    // Resolve with cached data
+    if (cached) {
+      return cached
     }
 
-    return null
+    const resolvedMock = resolveMock(mockPath) 
+    const stringifiedMock = resolvedMock
+      ? JSON.stringify(resolvedMock)
+      : ''
+
+    if (cache) {
+      cache.set(mockPath, stringifiedMock)
+    }
+
+    return stringifiedMock
+  }
+
+  function resolveMock (mockPath: string) {
+    let mockFileContent: string
+  
+    if (mockPath.endsWith('/')) {
+      mockPath += 'index'
+    }
+  
+    mockFileContent = options.resolveMockFile(mockPath)
+  
+    // Resolve fallback content
+    if (!mockFileContent) {
+      mockFileContent = options.resolveMockFile(
+        mockPath.replace(/[^\/]+$/, options.fallback ?? DEFAULT_FALLBACK_MOCK_FILENAME)
+      )
+    }
+
+    return mockFileContent 
+      ? compileMock`${raw(mockFileContent)}`
+      : null
   }
 }
-
-server
-  .listen(
-    3000,
-    () => console.log('Listening on port:', 3000)
-  )

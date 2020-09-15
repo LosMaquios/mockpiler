@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
     "esModuleInterop": true,
-    "rootDir": "./lib"
+    "rootDir": "./"
   }
 }

@@ -8,7 +8,7 @@
   "license": "MIT",
   "private": false,
   "scripts": {
-    "build": "tsdx build --entry lib/index.ts",
+    "build": "tsdx build --entry ./test.ts",
     "serve": "yarn build && node ./dist/index.js"
   },
   "dependencies": {
