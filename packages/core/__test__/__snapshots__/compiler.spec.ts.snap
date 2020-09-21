@@ -1,5 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`compiler should compilation throw an error on unknown ident 1`] = `"Unknown context identifier: aa"`;
+
+exports[`compiler should compilation throw an error on unknown ident with a custom context accessor 1`] = `"Unknown context identifier: unknown"`;
+
 exports[`compiler should compile interpolated code 1`] = `
 Object {
   "age": 30,
@@ -42,5 +46,13 @@ Object {
     },
   ],
   "name": "Test",
+}
+`;
+
+exports[`compiler should compile with given custom context accessor 1`] = `
+Object {
+  "a": "a",
+  "bb": "bb",
+  "ccc": "ccc",
 }
 `;

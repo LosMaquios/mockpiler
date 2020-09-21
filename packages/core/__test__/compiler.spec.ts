@@ -1,7 +1,8 @@
-import { createCompiler as mock, raw } from '../src/compiler'
+import { createCompiler as mock, raw } from '../src'
 import {
   validContext,
-  validCode
+  validCode,
+  customContextAccessor
 } from './fixtures'
 
 describe('compiler', () => {
@@ -9,6 +10,10 @@ describe('compiler', () => {
     expect(
       mock(validContext)`${raw(validCode)}`
     ).toMatchSnapshot()
+  })
+
+  test('should compilation throw an error on unknown ident', () => {
+    expect(() => mock(validContext)`{ aa }`).toThrowErrorMatchingSnapshot()
   })
 
   test('should compile interpolated code', () => {
@@ -22,5 +27,25 @@ describe('compiler', () => {
         }
       `
     ).toMatchSnapshot()
+  })
+
+  test('should compile with given custom context accessor', () => {
+    const compile = mock(customContextAccessor)
+
+    expect(
+      compile`
+        {
+          a
+          bb
+          ccc
+        }
+      `
+    ).toMatchSnapshot()
+  })
+
+  test('should compilation throw an error on unknown ident with a custom context accessor', () => {
+    const compile = mock(customContextAccessor)
+
+    expect(() => compile`{ unknown }`).toThrowErrorMatchingSnapshot()
   })
 })

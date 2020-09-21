@@ -10,77 +10,49 @@ import {
   AstNodeType,
   AstSpreadNode
 } from './parser'
-
-export interface MockContext {
-  [key: string]: any
-}
+import {
+  MockContextInput,
+  MockContext,
+  getTemplateAndRootContext,
+  MockContextAccessor,
+  unknownIdent
+} from './context'
 
 type CompileMockArgs = Parameters<typeof String['raw']>
-
-class RawValue {
-  constructor (
-    public raw: any) {}
-}
-
-const cleanUnwantedChars = (str: string) => str.replace(/\d+|=+$/g, '')
-
-const toBase64 = typeof window === 'undefined'
-  ? (str: any) => cleanUnwantedChars(Buffer.from(str.toString()).toString('base64'))
-  : (str: any) => cleanUnwantedChars(btoa(str.toString()))
 
 export class CompilerError extends Error {
   name = 'CompilerError'
 }
 
-export function raw (value: any) {
-  return new RawValue(value)
-}
-
+export function createCompiler (contextOrAccessor: MockContextInput): (...args: CompileMockArgs) => object
 export function createCompiler (...args: CompileMockArgs): object
-export function createCompiler (context: MockContext): (...args: CompileMockArgs) => object
-export function createCompiler (contextOrTemplateStrings: MockContext | TemplateStringsArray, ...values: any[]) {
+export function createCompiler (input: MockContextInput | TemplateStringsArray, ...values: any[]) {
   if (
-    Array.isArray(contextOrTemplateStrings) && 
-    contextOrTemplateStrings.hasOwnProperty('raw')
+    Array.isArray(input) && 
+    input.hasOwnProperty('raw')
   ) {
     return compileMock(
-      ...getTemplateAndContext(
-        contextOrTemplateStrings as any,
-        values
+      ...getTemplateAndRootContext(
+        input as any,
+        values,
+        () => unknownIdent
       )
     )
   }
 
   return (...[templateStrings, ...values]: CompileMockArgs) => {
-    let [template, context] = getTemplateAndContext(templateStrings, values)
+    const contextAccessor: MockContextAccessor = typeof input === 'function'
+      ? input as any
+      : key => (key in input) ? input[key] : unknownIdent
 
-    // Merge contexts
-    context = Object.assign({}, contextOrTemplateStrings, context)
-
-    return compileMock(template, context)
+    return compileMock(
+      ...getTemplateAndRootContext(
+        templateStrings, 
+        values,
+        contextAccessor
+      )
+    )
   }
-}
-
-function getTemplateAndContext (templateStrings: TemplateStringsArray, values: any[]): [string, MockContext] {
-  let template = templateStrings[0]
-  const context: MockContext = {}
-  const randomContextKey = toBase64(Math.random().toString().slice(2))
-
-  values.forEach((value, index) => {
-    if (value instanceof RawValue) {
-      template += `${value.raw}${templateStrings[index + 1]}`
-    } else {
-      const contextKey = `__mockpiler__${randomContextKey}_${toBase64(index)}`
-
-      context[contextKey] = value
-      template += `${contextKey}${templateStrings[index + 1]}`
-    }
-  })
-
-  return [
-    template,
-    context
-  ]
 }
 
 function compileMock (input: string, context: MockContext) {
@@ -165,11 +137,11 @@ function compileMock (input: string, context: MockContext) {
   }
 
   function compileIdent ({ name }: AstIdentifierNode) {
-    if (!(name in context)) {
+    const value = context[name]
+
+    if (value === unknownIdent) {
       throw new CompilerError(`Unknown context identifier: ${name}`)
     }
-
-    const value = context[name]
 
     return typeof value === 'function'
       ? value.call(context)

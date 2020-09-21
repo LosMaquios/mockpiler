@@ -1,4 +1,16 @@
-export const validContext = {
+import {
+  MockContextAccessor,
+  MockContext,
+  unknownIdent
+} from '../src'
+
+export const customContextAccessor: MockContextAccessor = key => {
+  return key !== 'unknown'
+    ? key
+    : unknownIdent
+}
+
+export const validContext: MockContext = {
   name: 'Test',
   age () {
     return 40
