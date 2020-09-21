@@ -14,42 +14,39 @@ import {
   MockContextInput,
   MockContext,
   getTemplateAndRootContext,
-  MockContextAccessor,
+  getContextAccessor,
   unknownIdent
 } from './context'
 
-type CompileMockArgs = Parameters<typeof String['raw']>
+export type CompileMockArgs = Parameters<typeof String['raw']>
 
 export class CompilerError extends Error {
   name = 'CompilerError'
 }
 
+const EMPTY_CONTEXT = Object.create(null)
+
 export function createCompiler (contextOrAccessor: MockContextInput): (...args: CompileMockArgs) => object
 export function createCompiler (...args: CompileMockArgs): object
 export function createCompiler (input: MockContextInput | TemplateStringsArray, ...values: any[]) {
-  if (
-    Array.isArray(input) && 
-    input.hasOwnProperty('raw')
+  return Array.isArray(input) && input.hasOwnProperty('raw') 
+    ? compileMockWithContext(input as any, values, EMPTY_CONTEXT)
+    : (...[templateStrings, ...values]: CompileMockArgs) => compileMockWithContext(
+        templateStrings,
+        values,
+        input
+      )
+
+  function compileMockWithContext (
+    templateStrings: TemplateStringsArray,
+    values: any[],
+    contextOrAccessor: MockContextInput
   ) {
     return compileMock(
       ...getTemplateAndRootContext(
-        input as any,
+        templateStrings,
         values,
-        () => unknownIdent
-      )
-    )
-  }
-
-  return (...[templateStrings, ...values]: CompileMockArgs) => {
-    const contextAccessor: MockContextAccessor = typeof input === 'function'
-      ? input as any
-      : key => (key in input) ? input[key] : unknownIdent
-
-    return compileMock(
-      ...getTemplateAndRootContext(
-        templateStrings, 
-        values,
-        contextAccessor
+        getContextAccessor(contextOrAccessor)
       )
     )
   }

@@ -57,3 +57,18 @@ export function getTemplateAndRootContext (
     rootContextProxy
   ]
 }
+
+/**
+ * Utility function to get a context accessor 
+ * from a plain context object
+ * 
+ * @param input
+ */
+export function getContextAccessor (input: MockContextInput): MockContextAccessor {
+  if (typeof input === 'function') {
+    return input as any
+  }
+
+  // Generate an accessor based on given input
+  return key => key in input ? input[key] : unknownIdent
+}

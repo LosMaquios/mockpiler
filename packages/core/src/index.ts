@@ -24,5 +24,6 @@ export {
   MockContext,
   MockContextAccessor,
   raw,
-  unknownIdent
+  unknownIdent,
+  getContextAccessor
 } from './context'
