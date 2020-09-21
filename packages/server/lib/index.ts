@@ -1,7 +1,9 @@
 import ms from 'ms'
 import LRUCache from 'lru-cache'
-import createMockpiler, { raw } from '@mockpiler/core'
-import { MockContext } from '@mockpiler/core/dist/compiler'
+import createMockpiler, {
+  raw,
+  MockContext
+} from '@mockpiler/core'
 
 export interface MockResolverOptions {
   /**
