@@ -23,7 +23,13 @@ const defaultConfig = {
   namespaceMode: FakerNamespaceMode.none
 }
 
+const FAKER_MUSTACHE_REGEX = /{{[a-z]+\.[a-z]+}}/i
+
 const fakerContextAccessor: MockContextAccessor = key => {
+  if (FAKER_MUSTACHE_REGEX.test(key)) {
+    return faker.fake(key)
+  }
+
   const path = getPathFromKey(key)
 
   if (!path) {
