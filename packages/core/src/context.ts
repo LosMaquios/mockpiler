@@ -72,3 +72,24 @@ export function getContextAccessor (input: MockContextInput): MockContextAccesso
   // Generate an accessor based on given input
   return key => key in input ? input[key] : unknownIdent
 }
+
+/**
+ * Merges given plain context objects or accessors
+ * 
+ * @param inputs 
+ */
+export function mergeContexts (...inputs: MockContextInput[]): MockContextAccessor {
+  const accessors = inputs.map(getContextAccessor)
+
+  return key => {
+    for (const accessor of accessors) {
+      const result = accessor(key)
+
+      if (result !== unknownIdent) {
+        return result
+      }
+    }
+
+    return unknownIdent
+  }
+}

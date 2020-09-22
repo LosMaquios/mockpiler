@@ -56,3 +56,11 @@ Object {
   "ccc": "ccc",
 }
 `;
+
+exports[`compiler should compile with merged contexts 1`] = `
+Object {
+  "aa": "aa",
+  "age": 40,
+  "name": "Test",
+}
+`;

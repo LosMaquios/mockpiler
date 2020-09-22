@@ -1,4 +1,4 @@
-import { createCompiler as mock, raw } from '../src'
+import { createCompiler as mock, raw, mergeContexts } from '../src'
 import {
   validContext,
   validCode,
@@ -47,5 +47,24 @@ describe('compiler', () => {
     const compile = mock(customContextAccessor)
 
     expect(() => compile`{ unknown }`).toThrowErrorMatchingSnapshot()
+  })
+
+  test('should compile with merged contexts', () => {
+    const compile = mock(
+      mergeContexts(
+        validContext,
+        customContextAccessor
+      )
+    )
+
+    expect(
+      compile`
+        {
+          name
+          age
+          aa
+        }
+      `
+    ).toMatchSnapshot()
   })
 })
