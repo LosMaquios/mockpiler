@@ -8,6 +8,6 @@ test('should compile with fake data', () => {
     }
   ` as any
 
-  expect(result.name).toMatch(/[A-Z][a-z]+\s[A-Z][a-z]+/)
+  expect(typeof result.name).toBe('string')
   expect(typeof result.locale).toBe('string')
 })
