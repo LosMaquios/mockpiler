@@ -3,8 +3,7 @@ import path from 'path'
 import fs from 'fs'
 import {
   createServer,
-  IncomingMessage,
-  ServerResponse
+  RequestListener
 } from 'http'
 
 import {
@@ -20,7 +19,7 @@ export interface MockServerOptions extends Omit<Omit<MockResolverOptions, 'resol
   /**
    * Not found response or handler
    */
-  notFound?: (req: IncomingMessage, res: ServerResponse) => void | ResponseChunk
+  notFound?: RequestListener | ResponseChunk
 }
 
 export function createMockServer (options: MockServerOptions) {
@@ -34,10 +33,7 @@ export function createMockServer (options: MockServerOptions) {
           'utf8'
         )
       } catch (error) {
-        if (error.code !== 'ENOENT') {
-          console.error(error)
-        }
-
+        console.error(error)
         return null
       }
     }
