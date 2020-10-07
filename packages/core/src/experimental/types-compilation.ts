@@ -1,11 +1,10 @@
-/**
- * Developing and testing can be done running this code in the playground: https://www.typescriptlang.org/play
- */
-
 type CompileError<
   Scope extends string,
   Message extends string
 > = `[Compiling ${Scope}] ${Message}`
+
+type Identity<T> = T
+type Merge<T> = Identity<{ [K in keyof T]: T[K] }>
 
 type Whitespace =
   | ' '
@@ -102,9 +101,9 @@ type CompileObject<Properties, Context, Result extends Record<string, any> = {}>
     : CompileIdent<Properties> extends [infer Key, infer Rest]
       ? TrimStart<Rest> extends `:${infer Rest}`
         ? CompileValue<Rest, Context> extends [infer Value, infer Rest]
-          ? CompileObject<Rest, Context, Result & { [K in Key & string]: ContextType<Context, Value> }>
+          ? CompileObject<Rest, Context, Merge<Result & { [K in Key & string]: ContextType<Context, Value> }>>
           : CompileError<'Object Property', '1 Expecting object, array or identifier'>
-        : CompileObject<Rest, Context, Result & { [K in Key & string]: ContextType<Context, Key> }>
+        : CompileObject<Rest, Context, Merge<Result & { [K in Key & string]: ContextType<Context, Key> }>>
       : CompileError<'Object Property', '2 Expecting object, array or identifier'>;
 
 type CompileIdent<Input> =
