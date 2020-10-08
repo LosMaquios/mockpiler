@@ -1,3 +1,7 @@
+/**
+ * Developing and testing can be done via TypeScript Playground
+ */
+
 type CompileError<
   Scope extends string,
   Message extends string
@@ -6,6 +10,15 @@ type CompileError<
 type Identity<T> = T;
 type Merge<T> = Identity<{ [K in keyof T]: T[K] }>;
 
+type NonZeroIntegers =
+  | '1' | '2' | '3'
+  | '4' | '5' | '6'
+  | '7' | '8' | '9';
+
+type StringIntegers =
+  | NonZeroIntegers
+  | '0';
+
 type StartIdentifierChars =
   | 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm'
   | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z'
@@ -13,35 +26,55 @@ type StartIdentifierChars =
   | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z'
   | '_';
 
-type LeftIdentifierChars = StartIdentifierChars | '-' | '.';
+type LeftIdentifierChars =
+  | StartIdentifierChars
+  | '-'
+  | '.';
 
 type Whitespace =
   | ' '
   | '\n'
   | '\t';
 
-type ValidCount = {
-   '1':  '0',
-   '2':  '1',
-   '3':  '2',
-   '4':  '3',
-   '5':  '4',
-   '6':  '5',
-   '7':  '6',
-   '8':  '7',
-   '9':  '8',
-  '10':  '9',
-  '11': '10',
-  '12': '11',
-  '13': '12',
-  '14': '13',
-  '15': '14',
-  '16': '15',
-  '17': '16',
-  '18': '17',
-  '19': '18',
-  '20': '19'
+type DecrementCounter = {
+  '0': '9',
+  '1': '0',
+  '2': '1',
+  '3': '2',
+  '4': '3',
+  '5': '4',
+  '6': '5',
+  '7': '6',
+  '8': '7',
+  '9': '8'
 };
+
+type ParseNumber<Input, Result extends StringIntegers[] = [], Start = true> =
+  Start extends true
+    ? TrimStart<Input> extends `${infer N & NonZeroIntegers}${infer Rest}`
+      ? ParseNumber<Rest, [...Result, N & NonZeroIntegers], false>
+      : false
+    : Input extends `${infer N & StringIntegers}${infer Rest}`
+      ? ParseNumber<Rest, [...Result, N & StringIntegers], false>
+      : [Result, Input];
+
+type DecrementNumber<Result extends any[]> =
+  Result extends [infer N]
+    ? N extends '0'
+      ? [N]
+      : [DecrementCounter[N & StringIntegers]]
+    : Result extends [...infer Rest, infer N]
+      ? N extends '0'
+        ? NormalizeNumber<[...DecrementNumber<Rest>, DecrementCounter[N & StringIntegers]]>
+        : NormalizeNumber<[...Rest, DecrementCounter[N & StringIntegers]]>
+      : never;
+
+type NormalizeNumber<Result extends any[]> =
+  Result extends ['0']
+    ? Result
+    : Result extends ['0', ...infer Rest]
+      ? Rest
+      : Result;
 
 type ContextType<Context, Key> =
   Key extends keyof Context
@@ -87,7 +120,7 @@ type CompileArray<Elements, Context, Result extends any[] = []> =
     ? [Result, Rest]
     : TrimStart<Elements> extends `(${infer Count})${infer Rest}`
       ? CompileValue<Rest, Context> extends [infer Value, infer Rest]
-        ? CompileCount<Value, Context, Count> extends infer CountResult 
+        ? CompileCount<Value, Context, ParseNumber<Count>[0]> extends infer CountResult 
           ? CountResult extends any[]
             ? CompileArray<Rest, Context, [...Result, ...CountResult]>
             : CountResult
@@ -97,12 +130,10 @@ type CompileArray<Elements, Context, Result extends any[] = []> =
         ? CompileArray<Rest, Context, [...Result, ContextType<Context, Value>]>
         : CompileError<'Array Element', '2 Expecting object, array or identifier'>;
 
-type CompileCount<Value, Context, Count = '1', Result extends any[] = []> =
-  Count extends '0'
+type CompileCount<Value, Context, Count extends any[], Result extends any[] = []> =
+  Count extends ['0']
     ? Result
-    : Count extends keyof ValidCount
-      ? CompileCount<Value, Context, ValidCount[Count], [...Result, ContextType<Context, Value>]>
-      : CompileError<'Count', `Invalid array count: '${Count & string}'`>;
+    : CompileCount<Value, Context, DecrementNumber<Count>, [...Result, ContextType<Context, Value>]>;
 
 type CompileObject<Properties, Context, Result extends Record<string, any> = {}> =
   TrimStart<Properties> extends `}${infer Rest}`
@@ -133,6 +164,13 @@ type TrimStart<Input> =
   Input extends `${Whitespace}${infer Trimmed}`
     ? TrimStart<Trimmed>
     : Input;
+
+type TrimEnd<Input> =
+  Input extends `${infer Trimmed}${Whitespace}`
+    ? TrimEnd<Trimmed>
+    : Input;
+
+type Trim<Input> = TrimEnd<TrimStart<Input>>;
 
 declare function mock<Context extends object, Input extends string>(context: Context, input: Input): Compile<Input, Context>;
 
