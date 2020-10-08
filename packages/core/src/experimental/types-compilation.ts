@@ -49,6 +49,21 @@ type DecrementCounter = {
   '9': '8'
 };
 
+type ParseCount<Input> =
+  ParseNumber<Input> extends infer Result
+    ? Result extends [infer N, infer Rest]
+      ? Rest extends ''
+        ? N
+        : false
+      : CompileIdent<Input> extends infer Result
+        ? Result extends [infer _/* ident */, infer Rest]
+          ? Rest extends ''
+            ? ['1']
+            : false
+          : false
+        : never
+    : never;
+
 type ParseNumber<Input, Result extends StringIntegers[] = [], Start = true> =
   Start extends true
     ? TrimStart<Input> extends `${infer N & NonZeroIntegers}${infer Rest}`
@@ -120,11 +135,15 @@ type CompileArray<Elements, Context, Result extends any[] = []> =
     ? [Result, Rest]
     : TrimStart<Elements> extends `(${infer Count})${infer Rest}`
       ? CompileValue<Rest, Context> extends [infer Value, infer Rest]
-        ? CompileCount<Value, Context, ParseNumber<Count>[0]> extends infer CountResult 
-          ? CountResult extends any[]
-            ? CompileArray<Rest, Context, [...Result, ...CountResult]>
-            : CountResult
-          : never
+        ? ParseCount<Count> extends infer Count
+          ? Count extends [...infer Counter]
+            ? CompileCount<Value, Context, Counter> extends infer CountResult 
+              ? CountResult extends any[]
+                ? CompileArray<Rest, Context, [...Result, ...CountResult]>
+                : CountResult
+              : never
+            : never
+          : CompileError<'Count', 'Error parsing count'>
         : CompileError<'Array Element', '1 Expecting object, array or identifier'>
       : CompileValue<Elements, Context> extends [infer Value, infer Rest]
         ? CompileArray<Rest, Context, [...Result, ContextType<Context, Value>]>
@@ -193,7 +212,7 @@ const context = {
 
 const result = mock(context, `
   [
-    (2) {
+    (1) {
       name
       age: randomAge
       favoriteFruits: [
