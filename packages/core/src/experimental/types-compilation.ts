@@ -1,10 +1,19 @@
 type CompileError<
   Scope extends string,
   Message extends string
-> = `[Compiling ${Scope}] ${Message}`
+> = `[Compiling ${Scope}] ${Message}`;
 
-type Identity<T> = T
-type Merge<T> = Identity<{ [K in keyof T]: T[K] }>
+type Identity<T> = T;
+type Merge<T> = Identity<{ [K in keyof T]: T[K] }>;
+
+type StartIdentifierChars =
+  | 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k' | 'l' | 'm'
+  | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' | 'y' | 'z'
+  | 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K' | 'L' | 'M'
+  | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X' | 'Y' | 'Z'
+  | '_';
+
+type LeftIdentifierChars = StartIdentifierChars | '-' | '.';
 
 type Whitespace =
   | ' '
@@ -109,7 +118,16 @@ type CompileObject<Properties, Context, Result extends Record<string, any> = {}>
 type CompileIdent<Input> =
   TrimStart<Input> extends `'${infer Ident}'${infer Rest}`
     ? [Ident, Rest]
-    : false;
+    : ExtractIdent<Input>;
+
+type ExtractIdent<Input, Result extends string = '', Start = true> =
+  Start extends true
+    ? TrimStart<Input> extends `${infer StartIdentChar & StartIdentifierChars}${infer Rest}`
+      ? ExtractIdent<Rest, `${Result}${StartIdentChar & string}`, false>
+      : false
+    : Input extends `${infer LeftIdentChar & LeftIdentifierChars}${infer Rest}`
+      ? ExtractIdent<Rest, `${Result}${LeftIdentChar & string}`, false>
+      : [Result, Input];
 
 type TrimStart<Input> =
   Input extends `${Whitespace}${infer Trimmed}`
@@ -138,10 +156,10 @@ const context = {
 const result = mock(context, `
   [
     (2) {
-      'name'
-      'age': 'randomAge'
-      'favoriteFruits': [
-        (3) 'randomFruit'
+      name
+      age: randomAge
+      favoriteFruits: [
+        (3) randomFruit
       ]
     }
   ]
