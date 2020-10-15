@@ -90,8 +90,53 @@ console.log(people)
  */
 ```
 
-## Roadmap / Ideas
+## API Docs
 
-  - [x] Implement a lexer for codeframes
-  - [ ] Make an integration with libs like [Faker.js](https://github.com/marak/Faker.js/)
-  - [x] Support for spread operators `e.g. { ...spread }`
+  *TODO*
+
+## Syntax
+
+### Object
+
+```
+object :=
+  { 
+    <identifier> | <identifier>: <identifier> | <array> | <object> | <spread>* 
+  }
+```
+
+### Array
+
+```
+array :=
+  [
+    [ ( <count> ) ] <identifier> | <object> | <array> | <spread>*
+  ]
+```
+
+### Identifier
+
+```
+start-identifier-char :=
+  a-z | _
+
+left-identifier-char :=
+  <start-identifier-char> | - | .
+
+identifier :=
+  <start-chart>[ <left-identifier>* ]
+```
+
+### Count
+
+```
+count :=
+  1-9[ 0-9* ]
+```
+
+### Spread
+
+```
+spread :=
+  ...<identifier>
+```
