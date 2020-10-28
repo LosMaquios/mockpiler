@@ -25,6 +25,12 @@ const LINE_INDICATOR_CHAR = '>'
  */
 const MAX_LINES = 4
 
+const ESCAPE_CHARS_REGEX = /[\n\t]/g
+const escapeChars = {
+  '\n': 'n',
+  '\t': 't'
+}
+
 class CodeframeBuffer {
   private linesBuffer: { [line: number]: string } = {}
 
@@ -55,19 +61,26 @@ class CodeframeBuffer {
 
     for (let line = this.minLine; line <= this.maxLine; line++) {
       const inHighlightLine = line === highlightLocation.start.line
+      const lineValue = this.linesBuffer[line] ?? ''
+
+      // Used as extra padding in the highlighted line
+      let escapeCharsOffset = 0
 
       formattedCode.push(
         (inHighlightLine ? LINE_INDICATOR_CHAR : '') +
         getPadding((inHighlightLine ? LINE_INDICATOR_CHAR.length : lineIndicatorSpacing) + maxLineLength - String(line).length) +
         line + LINE_SEPARATOR +
-        (this.linesBuffer[line] ?? '')
+        lineValue.replace(ESCAPE_CHARS_REGEX, escapeChar => {
+          escapeCharsOffset++
+          return `\\${escapeChars[escapeChar]}`
+        })
       )
 
       if (inHighlightLine) {
         formattedCode.push(
           getPadding(maxLineLength + lineIndicatorSpacing) +
           LINE_SEPARATOR + 
-          getPadding(highlightLocation.start.column - 1) +
+          getPadding(highlightLocation.start.column - 1 + escapeCharsOffset) +
           getFragmentIndicator(highlightLocation.end.column - highlightLocation.start.column)
         )
       }
