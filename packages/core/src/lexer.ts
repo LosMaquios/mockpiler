@@ -31,12 +31,18 @@ export enum TokenChar {
   /**
    * Spread tokens
    */
-  spreadToken = '.'
+  spreadToken = '.',
+
+  /**
+   * Transform tokens
+   */
+  transformToken = '>'
 }
 
 export enum TokenType {
   identifier = 'identifier',
   spread = 'spread',
+  transform = 'transform',
   object = 'object',
   array = 'array',
   count = 'count',
@@ -137,19 +143,9 @@ export function scan (input: string): Token[] {
         throwUnexpected()
       }
 
-      const startLocation = getLocation()
-
-      index += SPREAD_SIZE
-      column += SPREAD_SIZE
-
-      tokens.push({
-        type: TokenType.spread,
-        value: TokenChar.spreadToken.repeat(SPREAD_SIZE),
-        location: {
-          start: startLocation,
-          end: getLocation()
-        }
-      })
+      tokens.push(consumeSpread())
+    } else if (is(TokenChar.transformToken)) {
+      tokens.push(consumeToken(TokenType.transform))
     } else if (is(OBJECT_TOKENS)) {
       tokens.push(consumeToken(TokenType.object))
     } else if (is(COUNT_TOKENS)) {
@@ -192,6 +188,22 @@ export function scan (input: string): Token[] {
   })
 
   return tokens
+
+  function consumeSpread (): Token {
+    const startLocation = getLocation()
+
+    // Skip spread chars
+    advance(SPREAD_SIZE)
+
+    return {
+      type: TokenType.spread,
+      value: TokenChar.spreadToken.repeat(SPREAD_SIZE),
+      location: {
+        start: startLocation,
+        end: getLocation()
+      }
+    }
+  }
 
   function consumeToken (type: TokenType): Token {
     return {
@@ -271,7 +283,7 @@ export function scan (input: string): Token[] {
     return typeof expectation === 'string'
       ? peek(offset) === expectation
       : Array.isArray(expectation)
-      ? expectation.indexOf(peek(offset) as any) > -1
+      ? expectation.indexOf(peek(offset)) > -1
       : expectation.test(peek(offset))
   }
 
@@ -279,9 +291,9 @@ export function scan (input: string): Token[] {
     throw new LexerError(`Unknown token '${peek()}' at ${line}:${column}`)
   }
 
-  function advance () {
-    ++column
-    ++index
+  function advance (increment = 1) {
+    index += increment
+    column += increment
 
     return peek()
   }

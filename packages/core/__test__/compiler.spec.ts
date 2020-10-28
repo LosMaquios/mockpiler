@@ -1,4 +1,9 @@
-import { createCompiler as mock, raw, mergeContexts } from '../src'
+import {
+  createCompiler as mock,
+  raw,
+  mergeContexts,
+  transformers
+} from '../src'
 import {
   validContext,
   validCode,
@@ -66,5 +71,32 @@ describe('compiler', () => {
         }
       `
     ).toMatchSnapshot()
+  })
+
+  test('should transform values', () => {
+    const context = {
+      ...transformers,
+      value: 'Test'
+    }
+
+    const result: { map: Map<any, any>, set: Set<any> } = mock(context)`
+      {
+        map: Map > {
+          key: value
+        }
+        set: Set > [
+          value
+        ]
+      }
+    ` as any
+
+    expect(result.map).toBeInstanceOf(Map)
+    expect(result.set).toBeInstanceOf(Set)
+
+    expect(result.map.size).toBe(1)
+    expect(result.set.size).toBe(1)
+
+    expect(result.map.get('key')).toBe(context.value)
+    expect(result.set.has(context.value)).toBeTruthy()
   })
 })

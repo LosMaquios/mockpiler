@@ -8,7 +8,8 @@ import {
   AstObjectNode,
   AstRootNode,
   AstNodeType,
-  AstSpreadNode
+  AstSpreadNode,
+  AstTransformNode
 } from './parser'
 import {
   MockContextInput,
@@ -17,6 +18,7 @@ import {
   getContextAccessor,
   unknownIdent
 } from './context'
+import { TransformFn } from './transformer'
 
 export type CompileMockArgs = Parameters<typeof String['raw']>
 
@@ -130,18 +132,28 @@ function compileMock (input: string, context: MockContext) {
 
       case AstNodeType.Identifier:
         return compileIdent(node)
+
+      case AstNodeType.Transform:
+        return compileTransform(node)
     }
   }
 
-  function compileIdent ({ name }: AstIdentifierNode) {
+  function compileIdent ({ name }: AstIdentifierNode, shouldCompileFn = true) {
     const value = context[name]
 
     if (value === unknownIdent) {
       throw new CompilerError(`Unknown context identifier: ${name}`)
     }
 
-    return typeof value === 'function'
+    return typeof value === 'function' && shouldCompileFn
       ? value.call(context)
       : value
+  }
+
+  function compileTransform (node: AstTransformNode) {
+    const transformFn: TransformFn = compileIdent(node.transformer, false)
+    const value = compileValue(node.value)
+
+    return transformFn(value)
   }
 }

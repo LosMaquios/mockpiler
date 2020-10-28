@@ -10,6 +10,7 @@ export enum AstNodeType {
   Root = 'Root',
   Identifier = 'Identifier',
   Spread = 'Spread',
+  Transform = 'Tranform',
   Object = 'Object',
   Array = 'Array',
   Property = 'Property',
@@ -58,8 +59,14 @@ export interface AstSpreadNode extends AstNode {
   identifier: AstIdentifierNode
 }
 
+export interface AstTransformNode extends AstNode {
+  type: AstNodeType.Transform
+  transformer: AstIdentifierNode
+  value: AstValueNode
+}
+
 type AstObjectOrArrayNode = AstObjectNode | AstArrayNode
-export type AstValueNode = AstObjectOrArrayNode | AstIdentifierNode
+export type AstValueNode = AstObjectOrArrayNode | AstIdentifierNode | AstTransformNode
 
 const TRIM_IDENTIFIER_REGEX = new RegExp(`^${TokenChar.identifierToken}|${TokenChar.identifierToken}$`)
 
@@ -161,11 +168,7 @@ export function parse (tokens: Token[]) {
       next()
     }
 
-    const value: AstElementNode['value'] = (
-      parseArray() ??
-      parseObject() ??
-      parseIdentifier()
-    )
+    const value: AstElementNode['value'] = parseValue()
 
     if (!value) {
       throwUnexpected([
@@ -237,13 +240,7 @@ export function parse (tokens: Token[]) {
       // Skip `:`
       next()
 
-      value = (
-        parseArray() ??
-        parseObject() ??
-        parseIdentifier()
-      )
-
-      if (!value) {
+      if (!(value = parseValue())) {
         throwUnexpected([
           TokenChar.arrayStartToken,
           TokenChar.objectStartToken,
@@ -289,6 +286,35 @@ export function parse (tokens: Token[]) {
     }
   }
 
+  function parseTransform (transformer: AstIdentifierNode): AstIdentifierNode | AstTransformNode {
+    if (!is(TokenChar.transformToken)) {
+      return transformer
+    }
+
+    // Skip transform token
+    next()
+
+    const value = parseValue()
+
+    if (!value) {
+      throwUnexpected([
+        TokenChar.arrayStartToken,
+        TokenChar.objectStartToken,
+        TokenType.identifier
+      ])
+    }
+
+    return {
+      type: AstNodeType.Transform,
+      transformer,
+      value,
+      location: {
+        start: clone(transformer.location.start),
+        end: clone(value.location.end)
+      }
+    }
+  }
+
   function parseIdentifier (): AstIdentifierNode {
     const token = current()
 
@@ -304,6 +330,14 @@ export function parse (tokens: Token[]) {
       name: (token.value as string).replace(TRIM_IDENTIFIER_REGEX, ''),
       location: deepClone(token.location)
     }
+  }
+
+  function parseValue (): AstValueNode {
+    return (
+      parseArray() ??
+      parseObject() ??
+      parseTransform(parseIdentifier())
+    )
   }
 
   function expect (token: TokenChar) {
