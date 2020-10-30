@@ -171,11 +171,7 @@ export function parse (tokens: Token[]) {
     const value: AstElementNode['value'] = parseValue()
 
     if (!value) {
-      throwUnexpected([
-        TokenChar.arrayStartToken,
-        TokenChar.objectStartToken,
-        TokenType.identifier
-      ])
+      throwUnexpectedValue()
     }
 
     return {
@@ -228,7 +224,7 @@ export function parse (tokens: Token[]) {
     const key = parseIdentifier()
 
     if (!key) {
-      throwUnexpected([TokenType.identifier])
+      throwUnexpectedIdentifier()
     }
 
     let value: AstPropertyNode['value']
@@ -241,11 +237,7 @@ export function parse (tokens: Token[]) {
       next()
 
       if (!(value = parseValue())) {
-        throwUnexpected([
-          TokenChar.arrayStartToken,
-          TokenChar.objectStartToken,
-          TokenType.identifier
-        ])
+        throwUnexpectedValue()
       }
     }
 
@@ -273,7 +265,7 @@ export function parse (tokens: Token[]) {
     const identifier = parseIdentifier()
 
     if (!identifier) {
-      throwUnexpected([TokenType.identifier])
+      throwUnexpectedIdentifier()
     }
 
     return {
@@ -287,7 +279,7 @@ export function parse (tokens: Token[]) {
   }
 
   function parseTransform (transformer: AstIdentifierNode): AstIdentifierNode | AstTransformNode {
-    if (!is(TokenChar.transformToken)) {
+    if (!transformer || !is(TokenChar.transformToken)) {
       return transformer
     }
 
@@ -297,11 +289,7 @@ export function parse (tokens: Token[]) {
     const value = parseValue()
 
     if (!value) {
-      throwUnexpected([
-        TokenChar.arrayStartToken,
-        TokenChar.objectStartToken,
-        TokenType.identifier
-      ])
+      throwUnexpectedValue()
     }
 
     return {
@@ -316,9 +304,9 @@ export function parse (tokens: Token[]) {
   }
 
   function parseIdentifier (): AstIdentifierNode {
-    const token = current()
+    const identifier = current()
 
-    if (token.type !== TokenType.identifier) {
+    if (identifier.type !== TokenType.identifier) {
       return null
     }
 
@@ -327,8 +315,8 @@ export function parse (tokens: Token[]) {
 
     return {
       type: AstNodeType.Identifier,
-      name: (token.value as string).replace(TRIM_IDENTIFIER_REGEX, ''),
-      location: deepClone(token.location)
+      name: (identifier.value as string).replace(TRIM_IDENTIFIER_REGEX, ''),
+      location: deepClone(identifier.location)
     }
   }
 
@@ -346,23 +334,42 @@ export function parse (tokens: Token[]) {
     }
 
     if (!is(token)) {
-      throwUnexpected([token])
+      throwUnexpected([
+        token
+      ])
     }
   }
 
-  function throwUnexpected (expected?: string[]) {
+  function throwUnexpectedIdentifier () {
+    throwUnexpected([
+      TokenType.identifier
+    ])
+  }
+
+  function throwUnexpectedValue () {
+    throwUnexpected([
+      TokenChar.arrayStartToken,
+      TokenChar.objectStartToken,
+      TokenType.identifier
+    ])
+  }
+
+  function throwUnexpected (expected: string[]) {
+    const token = current()
+
     throwWithCodeFrame(
-      `Unexpected token: ${current().value}` +
-      (expected ? `. Expecting ${expected.join(', ')}` : '')
+      `Unexpected ${token.type === TokenType.EOF ? 'EOF' : `token: ${token.value}`}. Expecting ${expected.join(', ')}`
     )
   }
 
   function throwWithCodeFrame (message: string) {
-    throw new ParserError([
-      null,
-      `${generateCodeframe(tokens, index)}`,
-      message
-    ].join('\n\n'))
+    throw new ParserError(
+      [
+        null,
+        `${generateCodeframe(tokens, index)}`,
+        message
+      ].join('\n\n')
+    )
   }
 
   function clone<T extends object> (obj: T): T {
