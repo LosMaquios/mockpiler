@@ -68,7 +68,7 @@ export interface AstTransformNode extends AstNode {
 type AstObjectOrArrayNode = AstObjectNode | AstArrayNode
 export type AstValueNode = AstObjectOrArrayNode | AstIdentifierNode | AstTransformNode
 
-const TRIM_IDENTIFIER_REGEX = new RegExp(`^${TokenChar.identifierToken}|${TokenChar.identifierToken}$`)
+const TRIM_IDENTIFIER_REGEX = new RegExp(`^${TokenChar.identifierToken}|${TokenChar.identifierToken}$`, 'g')
 
 class ParserError extends Error {
   name = 'ParserError'

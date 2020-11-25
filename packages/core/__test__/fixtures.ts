@@ -33,6 +33,8 @@ export const validCode = `
   {
     name
     age
+    '{complex-key-braces}': name
+    '[complex-key-brackets]': age
     matches: [
       person
       ...people

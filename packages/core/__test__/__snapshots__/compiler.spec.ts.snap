@@ -18,6 +18,7 @@ Object {
 
 exports[`compiler should compile valid code 1`] = `
 Object {
+  "[complex-key-brackets]": 40,
   "age": 40,
   "matches": Array [
     Object {
@@ -46,6 +47,7 @@ Object {
     },
   ],
   "name": "Test",
+  "{complex-key-braces}": "Test",
 }
 `;
 

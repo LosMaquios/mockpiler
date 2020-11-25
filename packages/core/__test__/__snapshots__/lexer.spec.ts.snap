@@ -47,7 +47,7 @@ Array [
   Object {
     "location": Object {
       "end": Object {
-        "column": 12,
+        "column": 27,
         "line": 5,
       },
       "start": Object {
@@ -56,16 +56,16 @@ Array [
       },
     },
     "type": "identifier",
-    "value": "matches",
+    "value": "'{complex-key-braces}'",
   },
   Object {
     "location": Object {
       "end": Object {
-        "column": 13,
+        "column": 28,
         "line": 5,
       },
       "start": Object {
-        "column": 12,
+        "column": 27,
         "line": 5,
       },
     },
@@ -75,12 +75,96 @@ Array [
   Object {
     "location": Object {
       "end": Object {
-        "column": 15,
+        "column": 33,
         "line": 5,
       },
       "start": Object {
-        "column": 14,
+        "column": 29,
         "line": 5,
+      },
+    },
+    "type": "identifier",
+    "value": "name",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 29,
+        "line": 6,
+      },
+      "start": Object {
+        "column": 5,
+        "line": 6,
+      },
+    },
+    "type": "identifier",
+    "value": "'[complex-key-brackets]'",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 30,
+        "line": 6,
+      },
+      "start": Object {
+        "column": 29,
+        "line": 6,
+      },
+    },
+    "type": "object",
+    "value": ":",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 34,
+        "line": 6,
+      },
+      "start": Object {
+        "column": 31,
+        "line": 6,
+      },
+    },
+    "type": "identifier",
+    "value": "age",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 12,
+        "line": 7,
+      },
+      "start": Object {
+        "column": 5,
+        "line": 7,
+      },
+    },
+    "type": "identifier",
+    "value": "matches",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 13,
+        "line": 7,
+      },
+      "start": Object {
+        "column": 12,
+        "line": 7,
+      },
+    },
+    "type": "object",
+    "value": ":",
+  },
+  Object {
+    "location": Object {
+      "end": Object {
+        "column": 15,
+        "line": 7,
+      },
+      "start": Object {
+        "column": 14,
+        "line": 7,
       },
     },
     "type": "array",
@@ -90,11 +174,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 13,
-        "line": 6,
+        "line": 8,
       },
       "start": Object {
         "column": 7,
-        "line": 6,
+        "line": 8,
       },
     },
     "type": "identifier",
@@ -104,11 +188,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 10,
-        "line": 7,
+        "line": 9,
       },
       "start": Object {
         "column": 7,
-        "line": 7,
+        "line": 9,
       },
     },
     "type": "spread",
@@ -118,11 +202,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 16,
-        "line": 7,
+        "line": 9,
       },
       "start": Object {
         "column": 10,
-        "line": 7,
+        "line": 9,
       },
     },
     "type": "identifier",
@@ -132,11 +216,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 8,
-        "line": 8,
+        "line": 10,
       },
       "start": Object {
         "column": 7,
-        "line": 8,
+        "line": 10,
       },
     },
     "type": "count",
@@ -146,11 +230,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 9,
-        "line": 8,
+        "line": 10,
       },
       "start": Object {
         "column": 8,
-        "line": 8,
+        "line": 10,
       },
     },
     "type": "countNumber",
@@ -160,11 +244,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 10,
-        "line": 8,
+        "line": 10,
       },
       "start": Object {
         "column": 9,
-        "line": 8,
+        "line": 10,
       },
     },
     "type": "count",
@@ -174,11 +258,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 12,
-        "line": 8,
+        "line": 10,
       },
       "start": Object {
         "column": 11,
-        "line": 8,
+        "line": 10,
       },
     },
     "type": "object",
@@ -188,11 +272,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 13,
-        "line": 9,
+        "line": 11,
       },
       "start": Object {
         "column": 9,
-        "line": 9,
+        "line": 11,
       },
     },
     "type": "identifier",
@@ -202,11 +286,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 12,
-        "line": 10,
+        "line": 12,
       },
       "start": Object {
         "column": 9,
-        "line": 10,
+        "line": 12,
       },
     },
     "type": "identifier",
@@ -216,11 +300,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 8,
-        "line": 11,
+        "line": 13,
       },
       "start": Object {
         "column": 7,
-        "line": 11,
+        "line": 13,
       },
     },
     "type": "object",
@@ -230,11 +314,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 6,
-        "line": 12,
+        "line": 14,
       },
       "start": Object {
         "column": 5,
-        "line": 12,
+        "line": 14,
       },
     },
     "type": "array",
@@ -244,11 +328,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 4,
-        "line": 13,
+        "line": 15,
       },
       "start": Object {
         "column": 3,
-        "line": 13,
+        "line": 15,
       },
     },
     "type": "object",
@@ -258,11 +342,11 @@ Array [
     "location": Object {
       "end": Object {
         "column": 1,
-        "line": 14,
+        "line": 16,
       },
       "start": Object {
         "column": 1,
-        "line": 14,
+        "line": 16,
       },
     },
     "type": "EOF",

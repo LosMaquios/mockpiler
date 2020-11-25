@@ -6,14 +6,9 @@ export interface MockContext {
 
 export type MockContextAccessor = (key: string) => any
 
-const UNWANTED_CHARS_REGEX = /\d+|=+$/g
-const cleanUnwantedChars = (str: string) => str.replace(UNWANTED_CHARS_REGEX, '')
-
-const toBase64 = typeof window === 'undefined'
-  ? (str: any) => cleanUnwantedChars(Buffer.from(str.toString()).toString('base64'))
-  : (str: any) => cleanUnwantedChars(btoa(str.toString()))
-
 export const unknownIdent = Symbol('MockPiler.UnknownIdent')
+
+const encodeKey = (n: number) => n.toString(36)
 
 class RawValue {
   constructor (
@@ -30,7 +25,7 @@ export function getTemplateAndRootContext (
   accessor: MockContextAccessor
 ): [string, MockContext] {
   let [template] = templateStrings
-  const randomContextKey = toBase64(Math.random().toString().slice(2))
+  const randomContextKey = encodeKey(Math.random()).slice(2)
 
   const rootContext: MockContext = {}
   const rootContextProxy = new Proxy(rootContext, {
@@ -45,10 +40,10 @@ export function getTemplateAndRootContext (
     if (value instanceof RawValue) {
       template += `${value.raw}${templateStrings[index + 1]}`
     } else {
-      const contextKey = `__mockpiler__${randomContextKey}_${toBase64(index)}`
+      const contextKey = `__mockpiler__${randomContextKey}_${encodeKey(index)}`
 
       rootContext[contextKey] = value
-      template += `${contextKey}${templateStrings[index + 1]}`
+      template += `'${contextKey}'${templateStrings[index + 1]}`
     }
   })
 

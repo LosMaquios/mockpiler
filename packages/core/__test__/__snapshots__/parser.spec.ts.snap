@@ -5,7 +5,7 @@ Object {
   "location": Object {
     "end": Object {
       "column": 1,
-      "line": 14,
+      "line": 16,
     },
     "start": Object {
       "column": 1,
@@ -17,7 +17,7 @@ Object {
     "location": Object {
       "end": Object {
         "column": 4,
-        "line": 13,
+        "line": 15,
       },
       "start": Object {
         "column": 3,
@@ -111,12 +111,94 @@ Object {
         "key": Object {
           "location": Object {
             "end": Object {
-              "column": 12,
+              "column": 27,
               "line": 5,
             },
             "start": Object {
               "column": 5,
               "line": 5,
+            },
+          },
+          "name": "{complex-key-braces}",
+          "type": "Identifier",
+        },
+        "location": Object {
+          "end": Object {
+            "column": 33,
+            "line": 5,
+          },
+          "start": Object {
+            "column": 5,
+            "line": 5,
+          },
+        },
+        "type": "Property",
+        "value": Object {
+          "location": Object {
+            "end": Object {
+              "column": 33,
+              "line": 5,
+            },
+            "start": Object {
+              "column": 29,
+              "line": 5,
+            },
+          },
+          "name": "name",
+          "type": "Identifier",
+        },
+      },
+      Object {
+        "key": Object {
+          "location": Object {
+            "end": Object {
+              "column": 29,
+              "line": 6,
+            },
+            "start": Object {
+              "column": 5,
+              "line": 6,
+            },
+          },
+          "name": "[complex-key-brackets]",
+          "type": "Identifier",
+        },
+        "location": Object {
+          "end": Object {
+            "column": 34,
+            "line": 6,
+          },
+          "start": Object {
+            "column": 5,
+            "line": 6,
+          },
+        },
+        "type": "Property",
+        "value": Object {
+          "location": Object {
+            "end": Object {
+              "column": 34,
+              "line": 6,
+            },
+            "start": Object {
+              "column": 31,
+              "line": 6,
+            },
+          },
+          "name": "age",
+          "type": "Identifier",
+        },
+      },
+      Object {
+        "key": Object {
+          "location": Object {
+            "end": Object {
+              "column": 12,
+              "line": 7,
+            },
+            "start": Object {
+              "column": 5,
+              "line": 7,
             },
           },
           "name": "matches",
@@ -125,11 +207,11 @@ Object {
         "location": Object {
           "end": Object {
             "column": 6,
-            "line": 12,
+            "line": 14,
           },
           "start": Object {
             "column": 5,
-            "line": 5,
+            "line": 7,
           },
         },
         "type": "Property",
@@ -140,11 +222,11 @@ Object {
               "location": Object {
                 "end": Object {
                   "column": 13,
-                  "line": 6,
+                  "line": 8,
                 },
                 "start": Object {
                   "column": 7,
-                  "line": 6,
+                  "line": 8,
                 },
               },
               "type": "Element",
@@ -152,11 +234,11 @@ Object {
                 "location": Object {
                   "end": Object {
                     "column": 13,
-                    "line": 6,
+                    "line": 8,
                   },
                   "start": Object {
                     "column": 7,
-                    "line": 6,
+                    "line": 8,
                   },
                 },
                 "name": "person",
@@ -168,11 +250,11 @@ Object {
                 "location": Object {
                   "end": Object {
                     "column": 16,
-                    "line": 7,
+                    "line": 9,
                   },
                   "start": Object {
                     "column": 10,
-                    "line": 7,
+                    "line": 9,
                   },
                 },
                 "name": "people",
@@ -181,11 +263,11 @@ Object {
               "location": Object {
                 "end": Object {
                   "column": 16,
-                  "line": 7,
+                  "line": 9,
                 },
                 "start": Object {
                   "column": 7,
-                  "line": 7,
+                  "line": 9,
                 },
               },
               "type": "Spread",
@@ -195,11 +277,11 @@ Object {
               "location": Object {
                 "end": Object {
                   "column": 8,
-                  "line": 11,
+                  "line": 13,
                 },
                 "start": Object {
                   "column": 7,
-                  "line": 8,
+                  "line": 10,
                 },
               },
               "type": "Element",
@@ -207,11 +289,11 @@ Object {
                 "location": Object {
                   "end": Object {
                     "column": 8,
-                    "line": 11,
+                    "line": 13,
                   },
                   "start": Object {
                     "column": 11,
-                    "line": 8,
+                    "line": 10,
                   },
                 },
                 "properties": Array [
@@ -220,11 +302,11 @@ Object {
                       "location": Object {
                         "end": Object {
                           "column": 13,
-                          "line": 9,
+                          "line": 11,
                         },
                         "start": Object {
                           "column": 9,
-                          "line": 9,
+                          "line": 11,
                         },
                       },
                       "name": "name",
@@ -233,11 +315,11 @@ Object {
                     "location": Object {
                       "end": Object {
                         "column": 13,
-                        "line": 9,
+                        "line": 11,
                       },
                       "start": Object {
                         "column": 9,
-                        "line": 9,
+                        "line": 11,
                       },
                     },
                     "type": "Property",
@@ -245,11 +327,11 @@ Object {
                       "location": Object {
                         "end": Object {
                           "column": 13,
-                          "line": 9,
+                          "line": 11,
                         },
                         "start": Object {
                           "column": 9,
-                          "line": 9,
+                          "line": 11,
                         },
                       },
                       "name": "name",
@@ -261,11 +343,11 @@ Object {
                       "location": Object {
                         "end": Object {
                           "column": 12,
-                          "line": 10,
+                          "line": 12,
                         },
                         "start": Object {
                           "column": 9,
-                          "line": 10,
+                          "line": 12,
                         },
                       },
                       "name": "age",
@@ -274,11 +356,11 @@ Object {
                     "location": Object {
                       "end": Object {
                         "column": 12,
-                        "line": 10,
+                        "line": 12,
                       },
                       "start": Object {
                         "column": 9,
-                        "line": 10,
+                        "line": 12,
                       },
                     },
                     "type": "Property",
@@ -286,11 +368,11 @@ Object {
                       "location": Object {
                         "end": Object {
                           "column": 12,
-                          "line": 10,
+                          "line": 12,
                         },
                         "start": Object {
                           "column": 9,
-                          "line": 10,
+                          "line": 12,
                         },
                       },
                       "name": "age",
@@ -305,11 +387,11 @@ Object {
           "location": Object {
             "end": Object {
               "column": 6,
-              "line": 12,
+              "line": 14,
             },
             "start": Object {
               "column": 14,
-              "line": 5,
+              "line": 7,
             },
           },
           "type": "Array",
