@@ -1,5 +1,7 @@
 # MockPiler
 
+![Build and test workflow badge](https://github.com/LosMaquios/mockpiler/workflows/Build%20and%20test/badge.svg)
+
   Generate mock data using a dead simple JSON-like language.
 
   **Support:** It should work for any JavaScript runtime like `Deno`, `Node.js` and `browsers`.
