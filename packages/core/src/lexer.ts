@@ -124,142 +124,111 @@ export class LexerError extends Error {
   name = 'LexerError'
 }
 
-export function scan (input: string): Token[] {
-  let index = 0
-  let line = 1
-  let column = 1
+export class Lexer {
+  index = 0
+  line = 1
+  column = 1
 
-  const tokens: Token[] = []
-  const { length } = input
+  constructor (
+    public input: string) {}
 
-  while (index < length) {
-    if (is(ARRAY_TOKENS)) {
-      tokens.push(consumeToken(TokenType.array))
-    } else if (is(TokenChar.spreadToken)) {
-      if (
-        !is(TokenChar.spreadToken, 1) ||
-        !is(TokenChar.spreadToken, 2)
-      ) {
-        throwUnexpected()
-      }
+  is (expectation: RegExp | string | string[], offset?: number) {
+    return typeof expectation === 'string'
+      ? this.peek(offset) === expectation
+      : Array.isArray(expectation)
+      ? expectation.indexOf(this.peek(offset)) > -1
+      : expectation.test(this.peek(offset))
+  }
 
-      tokens.push(consumeSpread())
-    } else if (is(TokenChar.transformToken)) {
-      tokens.push(consumeToken(TokenType.transform))
-    } else if (is(OBJECT_TOKENS)) {
-      tokens.push(consumeToken(TokenType.object))
-    } else if (is(COUNT_TOKENS)) {
-      tokens.push(consumeToken(TokenType.count))
-    } else if (is(COUNT_DIGIT_REGEX)) {
-      const token = consumeRegex(TokenType.countNumber, COUNT_DIGIT_REGEX)
-      token.value = parseInt(token.value as string)
+  peek (offset = 0) {
+    return this.input[this.index + offset]
+  }
 
-      tokens.push(token)
-    } else if (is(TokenChar.identifierToken)) {
-      tokens.push(consumeIdent())
-    } else if (is(START_IDENTIFIER_REGEX)) {
-      tokens.push(consumeRegex(TokenType.identifier, IDENTIFIER_REGEX))
-    } else if (is(LINE_CHAR)) {
-      ++line
-      ++index
+  advance (increment = 1) {
+    this.index += increment
+    this.column += increment
 
-      // Reset column
-      column = 1
-    } else if (is(TAB_CHAR)) {
-      ++index
-      column += TAB_SPACE_SIZE
-    } else if (is(SPACE_CHAR)) {
-      advance()
-    } else if (is(IGNORED_CHARS)) {
-      ++index
-    } else {
-      throwUnexpected()
+    return this.peek()
+  }
+
+  getLocation (): TokenLocation {
+    return {
+      line: this.line,
+      column: this.column
     }
   }
 
-  // Push end-of-file
-  tokens.push({
-    type: TokenType.EOF,
-    value: '',
-    location: {
-      start: getLocation(),
-      end: getLocation()
+  consumeToken (type: TokenType): Token {
+    return {
+      type,
+      value: this.peek(),
+      location: {
+        start: this.getLocation(),
+        end: (this.advance(), this.getLocation())
+      }
     }
-  })
+  }
 
-  return tokens
-
-  function consumeSpread (): Token {
-    const startLocation = getLocation()
+  consumeSpread (): Token {
+    const startLocation = this.getLocation()
 
     // Skip spread chars
-    advance(SPREAD_SIZE)
+    this.advance(SPREAD_SIZE)
 
     return {
       type: TokenType.spread,
       value: TokenChar.spreadToken.repeat(SPREAD_SIZE),
       location: {
         start: startLocation,
-        end: getLocation()
+        end: this.getLocation()
       }
     }
   }
 
-  function consumeToken (type: TokenType): Token {
-    return {
-      type,
-      value: peek(),
-      location: {
-        start: getLocation(),
-        end: (advance(), getLocation())
-      }
-    }
-  }
-
-  function consumeIdent (): Token {
-    let ident = peek() // Save leading identifier token
+  consumeIdent (): Token {
+    let ident = this.peek() // Save leading identifier token
     let escaping = false
 
-    const start = getLocation()
+    const start = this.getLocation()
 
     while (
-      advance() &&
-      (!is(TokenChar.identifierToken) || escaping)
+      this.advance() &&
+      (!this.is(TokenChar.identifierToken) || escaping)
     ) {
-      escaping = !escaping && is(TokenChar.escapeToken)
+      escaping = !escaping && this.is(TokenChar.escapeToken)
 
       // Avoid appending escaping char
       if (!escaping) {
-        ident += peek()
+        ident += this.peek()
       }
     }
 
-    if (!peek()) {
+    if (!this.peek()) {
       throw new LexerError('Unexpected EOF')
     }
 
     // Save trailing identifier token
-    ident += peek()
+    ident += this.peek()
 
     // Skip trailing identifier token
-    advance()
+    this.advance()
 
     return {
       type: TokenType.identifier,
       value: ident,
       location: {
         start,
-        end: getLocation()
+        end: this.getLocation()
       }
     }
   }
 
-  function consumeRegex (type: TokenType, regex: RegExp): Token {
-    let value = peek()
-    const start = getLocation()
+  consumeRegex (type: TokenType, regex: RegExp): Token {
+    let value = this.peek()
+    const start = this.getLocation()
 
-    while (advance() && regex.test(peek())) {
-      value += peek()
+    while (this.advance() && regex.test(this.peek())) {
+      value += this.peek()
     }
 
     return {
@@ -267,38 +236,78 @@ export function scan (input: string): Token[] {
       value,
       location: {
         start,
-        end: getLocation()
+        end: this.getLocation()
       }
     }
   }
 
-  function getLocation (): TokenLocation {
-    return {
-      line,
-      column
+  throwUnexpected () {
+    throw new LexerError(`Unknown token '${this.peek()}' at ${this.line}:${this.column}`)
+  }
+
+  scan () {
+    const tokens: Token[] = []
+    const { length } = this.input
+
+    while (this.index < length) {
+      if (this.is(ARRAY_TOKENS)) {
+        tokens.push(this.consumeToken(TokenType.array))
+      } else if (this.is(TokenChar.spreadToken)) {
+        if (
+          !this.is(TokenChar.spreadToken, 1) ||
+          !this.is(TokenChar.spreadToken, 2)
+        ) {
+          this.throwUnexpected()
+        }
+
+        tokens.push(this.consumeSpread())
+      } else if (this.is(TokenChar.transformToken)) {
+        tokens.push(this.consumeToken(TokenType.transform))
+      } else if (this.is(OBJECT_TOKENS)) {
+        tokens.push(this.consumeToken(TokenType.object))
+      } else if (this.is(COUNT_TOKENS)) {
+        tokens.push(this.consumeToken(TokenType.count))
+      } else if (this.is(COUNT_DIGIT_REGEX)) {
+        const token = this.consumeRegex(TokenType.countNumber, COUNT_DIGIT_REGEX)
+        token.value = parseInt(token.value as string)
+
+        tokens.push(token)
+      } else if (this.is(TokenChar.identifierToken)) {
+        tokens.push(this.consumeIdent())
+      } else if (this.is(START_IDENTIFIER_REGEX)) {
+        tokens.push(this.consumeRegex(TokenType.identifier, IDENTIFIER_REGEX))
+      } else if (this.is(LINE_CHAR)) {
+        ++this.line
+        ++this.index
+
+        // Reset column
+        this.column = 1
+      } else if (this.is(TAB_CHAR)) {
+        ++this.index
+        this.column += TAB_SPACE_SIZE
+      } else if (this.is(SPACE_CHAR)) {
+        this.advance()
+      } else if (this.is(IGNORED_CHARS)) {
+        ++this.index
+      } else {
+        this.throwUnexpected()
+      }
     }
-  }
 
-  function is (expectation: RegExp | string | string[], offset?: number) {
-    return typeof expectation === 'string'
-      ? peek(offset) === expectation
-      : Array.isArray(expectation)
-      ? expectation.indexOf(peek(offset)) > -1
-      : expectation.test(peek(offset))
-  }
+    // Push end-of-file
+    tokens.push({
+      type: TokenType.EOF,
+      value: '',
+      location: {
+        start: this.getLocation(),
+        end: this.getLocation()
+      }
+    })
 
-  function throwUnexpected () {
-    throw new LexerError(`Unknown token '${peek()}' at ${line}:${column}`)
+    return tokens
   }
+}
 
-  function advance (increment = 1) {
-    index += increment
-    column += increment
-
-    return peek()
-  }
-
-  function peek (offset = 0) {
-    return input[index + offset]
-  }
+export function scan (input: string): Token[] {
+  return new Lexer(input).scan()
 }
