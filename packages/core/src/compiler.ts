@@ -54,106 +54,117 @@ export function createCompiler (input: MockContextInput | TemplateStringsArray, 
   }
 }
 
-function compileMock (input: string, context: MockContext) {
-  const tokens = scan(input)
-  const rootNode = parse(tokens)
+export class Compiler {
+  constructor (
+    public input: string,
+    public context: MockContext
+  ) {}
 
-  return compileRoot(rootNode)
+  compile () {
+    const tokens = scan(this.input)
+    const rootNode = parse(tokens)
 
-  function compileRoot ({ value }: AstRootNode) {
-    return value.type === AstNodeType.Array
-      ? compileArray(value)
-      : compileObject(value)
+    return this.compileRoot(rootNode)
   }
 
-  function compileArray (node: AstArrayNode) {
+  compileRoot ({ value }: AstRootNode) {
+    return value.type === AstNodeType.Array
+      ? this.compileArray(value)
+      : this.compileObject(value)
+  }
+
+  compileArray (node: AstArrayNode) {
     const result = []
 
     for (const element of node.elements) {
       if (element.type === AstNodeType.Spread) {
-        compileElementSpread(element, result)
+        this.compileElementSpread(element, result)
       } else {
-        compileElement(element, result)
+        this.compileElement(element, result)
       }
     }
 
     return result
   }
 
-  function compileElementSpread (node: AstSpreadNode, values: any[]) {
-    const result = compileIdent(node.identifier)
+  compileElementSpread (node: AstSpreadNode, values: any[]) {
+    const result = this.compileIdent(node.identifier)
 
     for (const value of result) {
       values.push(value)
     }
   }
 
-  function compileElement (node: AstElementNode, values: any[]) {
+  compileElement (node: AstElementNode, values: any[]) {
     let count = typeof node.count !== 'number'
-      ? compileIdent(node.count)
+      ? this.compileIdent(node.count)
       : node.count
 
     while (count--) {
       values.push(
-        compileValue(node.value)
+        this.compileValue(node.value)
       )
     }
   }
 
-  function compileObject (node: AstObjectNode) {
+  compileObject (node: AstObjectNode) {
     const result = {}
 
     for (const property of node.properties) {
       if (property.type === AstNodeType.Spread) {
-        compilePropertySpread(property, result)
+        this.compilePropertySpread(property, result)
       } else {
-        result[property.key.name] = compileValue(property.value)
+        result[property.key.name] = this.compileValue(property.value)
       }
     }
 
     return result
   }
 
-  function compilePropertySpread (node: AstSpreadNode, values: object) {
-    const result = compileIdent(node.identifier)
+  compilePropertySpread (node: AstSpreadNode, values: object) {
+    const result = this.compileIdent(node.identifier)
 
     for (const key of Object.keys(result)) {
       values[key] = result[key]
     }
   }
 
-  function compileValue (node: AstValueNode) {
+  compileValue (node: AstValueNode) {
     switch (node.type) {
       case AstNodeType.Array:
-        return compileArray(node)
+        return this.compileArray(node)
 
       case AstNodeType.Object:
-        return compileObject(node)
+        return this.compileObject(node)
 
       case AstNodeType.Identifier:
-        return compileIdent(node)
+        return this.compileIdent(node)
 
       case AstNodeType.Transform:
-        return compileTransform(node)
+        return this.compileTransform(node)
     }
   }
 
-  function compileIdent ({ name }: AstIdentifierNode, shouldCompileFn = true) {
-    const value = context[name]
+  compileIdent ({ name }: AstIdentifierNode, shouldCompileFn = true) {
+    const value = this.context[name]
 
     if (value === unknownIdent) {
       throw new CompilerError(`Unknown context identifier: ${name}`)
     }
 
     return typeof value === 'function' && shouldCompileFn
-      ? value.call(context)
+      ? value.call(this.context)
       : value
   }
 
-  function compileTransform (node: AstTransformNode) {
-    const transformFn: TransformFn = compileIdent(node.transformer, false)
-    const value = compileValue(node.value)
+  compileTransform (node: AstTransformNode) {
+    const transformFn: TransformFn = this.compileIdent(node.transformer, false)
+    const value = this.compileValue(node.value)
 
     return transformFn(value)
   }
+}
+
+export function compileMock (input: string, context: MockContext) {
+  return new Compiler(input, context).compile()
 }
