@@ -28,8 +28,10 @@ export class CompilerError extends Error {
 
 const EMPTY_CONTEXT = Object.create(null)
 
-export function createCompiler (contextOrAccessor: MockContextInput): (...args: CompileMockArgs) => object
-export function createCompiler (...args: CompileMockArgs): object
+export type CompileMockFn = (...args: CompileMockArgs) => any
+
+export function createCompiler (contextOrAccessor: MockContextInput): CompileMockFn
+export function createCompiler (...args: Parameters<CompileMockFn>): ReturnType<CompileMockFn>
 export function createCompiler (input: MockContextInput | TemplateStringsArray, ...values: any[]) {
   return Array.isArray(input) && input.hasOwnProperty('raw') 
     ? compileMockWithContext(input as any, values, EMPTY_CONTEXT)
@@ -67,13 +69,13 @@ export class Compiler {
     return this.compileRoot(rootNode)
   }
 
-  compileRoot ({ value }: AstRootNode) {
+  compileRoot<T extends AstRootNode> ({ value }: T): any {
     return value.type === AstNodeType.Array
       ? this.compileArray(value)
       : this.compileObject(value)
   }
 
-  compileArray (node: AstArrayNode) {
+  compileArray (node: AstArrayNode): any[] {
     const result = []
 
     for (const element of node.elements) {
@@ -87,27 +89,27 @@ export class Compiler {
     return result
   }
 
-  compileElementSpread (node: AstSpreadNode, values: any[]) {
+  compileElementSpread (node: AstSpreadNode, parent: any[]) {
     const result = this.compileIdent(node.identifier)
 
     for (const value of result) {
-      values.push(value)
+      parent.push(value)
     }
   }
 
-  compileElement (node: AstElementNode, values: any[]) {
+  compileElement (node: AstElementNode, parent: any[]) {
     let count = typeof node.count !== 'number'
       ? this.compileIdent(node.count)
       : node.count
 
     while (count--) {
-      values.push(
+      parent.push(
         this.compileValue(node.value)
       )
     }
   }
 
-  compileObject (node: AstObjectNode) {
+  compileObject (node: AstObjectNode): Record<string, any> {
     const result = {}
 
     for (const property of node.properties) {
@@ -121,27 +123,31 @@ export class Compiler {
     return result
   }
 
-  compilePropertySpread (node: AstSpreadNode, values: object) {
+  compilePropertySpread (node: AstSpreadNode, parent: object) {
     const result = this.compileIdent(node.identifier)
 
     for (const key of Object.keys(result)) {
-      values[key] = result[key]
+      parent[key] = result[key]
     }
   }
 
   compileValue (node: AstValueNode) {
     switch (node.type) {
-      case AstNodeType.Array:
+      case AstNodeType.Array: {
         return this.compileArray(node)
+      }
 
-      case AstNodeType.Object:
+      case AstNodeType.Object: {
         return this.compileObject(node)
+      }
 
-      case AstNodeType.Identifier:
+      case AstNodeType.Identifier: {
         return this.compileIdent(node)
+      }
 
-      case AstNodeType.Transform:
+      case AstNodeType.Transform: {
         return this.compileTransform(node)
+      }
     }
   }
 
