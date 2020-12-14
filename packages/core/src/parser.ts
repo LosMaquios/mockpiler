@@ -5,6 +5,10 @@ import {
   TokenLocation
 } from './lexer'
 import { generateCodeframe } from './codeframe'
+import {
+  deepClone,
+  shallowClone
+} from './utils'
 
 export enum AstNodeType {
   Root = 'Root',
@@ -74,19 +78,24 @@ class ParserError extends Error {
   name = 'ParserError'
 }
 
-export function parse (tokens: Token[]) {
-  let index = 0
+export class Parser {
+  index = 0
 
-  return parseRoot()
+  constructor (
+    public tokens: Token[]) {}
 
-  function parseRoot (): AstRootNode {
+  parse () {
+    return this.parseRoot()
+  }
+
+  parseRoot (): AstRootNode {
     const value: AstRootNode['value'] = (
-      parseArray() ??
-      parseObject()
+      this.parseArray() ??
+      this.parseObject()
     )
 
     if (!value) {
-      throwUnexpected([
+      this.throwUnexpected([
         TokenChar.arrayStartToken,
         TokenChar.objectStartToken
       ])
@@ -97,35 +106,35 @@ export function parse (tokens: Token[]) {
       value,
       location: {
         start: { line: 1, column: 1 },
-        end: clone(current().location.end)
+        end: shallowClone(this.current().location.end)
       }
     }
   }
 
-  function parseArray (): AstArrayNode {
-    if (!is(TokenChar.arrayStartToken)) {
+  parseArray (): AstArrayNode {
+    if (!this.is(TokenChar.arrayStartToken)) {
       return null
     }
 
-    const startLocation: TokenLocation = clone(current().location.start)
+    const startLocation: TokenLocation = shallowClone(this.current().location.start)
     const elements: AstArrayNode['elements'] = []
 
     // Skip start token `[`
-    next()
+    this.next()
 
-    while (current() && !is(TokenChar.arrayEndToken)) {
+    while (this.current() && !this.is(TokenChar.arrayEndToken)) {
       elements.push(
-        parseSpread() ??
-        parseElement()
+        this.parseSpread() ??
+        this.parseElement()
       )
     }
 
-    expect(TokenChar.arrayEndToken)
+    this.expect(TokenChar.arrayEndToken)
 
-    const endLocation = clone(current().location.end)
+    const endLocation = shallowClone(this.current().location.end)
 
     // Skip end token `]`
-    next()
+    this.next()
 
     return {
       type: AstNodeType.Array,
@@ -137,41 +146,41 @@ export function parse (tokens: Token[]) {
     }
   }
 
-  function parseElement (): AstElementNode {
+  parseElement (): AstElementNode {
     let count: AstElementNode['count']
     let startLocation: TokenLocation
 
-    if (!is(TokenChar.countStartToken)) {
+    if (!this.is(TokenChar.countStartToken)) {
       count = 1
     } else {
-      startLocation = clone(current().location.start)
+      startLocation = shallowClone(this.current().location.start)
 
       // Skip leading count token `(`<-$count)
-      next()
+      this.next()
 
-      const token = current()
+      const token = this.current()
 
       if (token.type === TokenType.countNumber) {
         count = token.value as number
-        next()
+        this.next()
       } else {
-        count = parseIdentifier()
+        count = this.parseIdentifier()
 
         if (!count) {
-          throwUnexpected([TokenType.count])
+          this.throwUnexpected([TokenType.count])
         }
       }
 
-      expect(TokenChar.countEndToken)
+      this.expect(TokenChar.countEndToken)
 
       // Skip trailing count token ($count->`)`
-      next()
+      this.next()
     }
 
-    const value: AstElementNode['value'] = parseValue()
+    const value: AstElementNode['value'] = this.parseValue()
 
     if (!value) {
-      throwUnexpectedValue()
+      this.throwUnexpectedValue()
     }
 
     return {
@@ -179,36 +188,36 @@ export function parse (tokens: Token[]) {
       count,
       value,
       location: {
-        start: startLocation ?? clone(value.location.start),
-        end: clone(value.location.end)
+        start: startLocation ?? shallowClone(value.location.start),
+        end: shallowClone(value.location.end)
       }
     }
   }
 
-  function parseObject (): AstObjectNode {
-    if (!is(TokenChar.objectStartToken)) {
+  parseObject (): AstObjectNode {
+    if (!this.is(TokenChar.objectStartToken)) {
       return null
     }
 
-    const startLocation: TokenLocation = clone(current().location.start)
+    const startLocation: TokenLocation = shallowClone(this.current().location.start)
     const properties: AstObjectNode['properties'] = []
 
     // Skip start token `{`
-    next()
+    this.next()
 
-    while (current() && !is(TokenChar.objectEndToken)) {
+    while (this.current() && !this.is(TokenChar.objectEndToken)) {
       properties.push(
-        parseSpread() ??
-        parseProperty()
+        this.parseSpread() ??
+        this.parseProperty()
       )
     }
 
     expect(TokenChar.objectEndToken)
 
-    const endLocation = clone(current().location.end)
+    const endLocation = shallowClone(this.current().location.end)
 
     // Skip end token `}`
-    next()
+    this.next()
 
     return {
       type: AstNodeType.Object,
@@ -220,24 +229,24 @@ export function parse (tokens: Token[]) {
     }
   }
 
-  function parseProperty (): AstPropertyNode {
-    const key = parseIdentifier()
+  parseProperty (): AstPropertyNode {
+    const key = this.parseIdentifier()
 
     if (!key) {
-      throwUnexpectedIdentifier()
+      this.throwUnexpectedIdentifier()
     }
 
     let value: AstPropertyNode['value']
 
-    if (!is(TokenChar.objectPairSeparator)) {
+    if (!this.is(TokenChar.objectPairSeparator)) {
       // Copy key node
       value = deepClone(key)
     } else {
       // Skip `:`
-      next()
+      this.next()
 
-      if (!(value = parseValue())) {
-        throwUnexpectedValue()
+      if (!(value = this.parseValue())) {
+        this.throwUnexpectedValue()
       }
     }
 
@@ -246,50 +255,50 @@ export function parse (tokens: Token[]) {
       key,
       value,
       location: {
-        start: clone(key.location.start),
-        end: clone(value.location.end)
+        start: shallowClone(key.location.start),
+        end: shallowClone(value.location.end)
       }
     }
   }
 
-  function parseSpread (): AstSpreadNode {
-    const spreadToken = current()
+  parseSpread (): AstSpreadNode {
+    const spreadToken = this.current()
 
     if (spreadToken.type !== TokenType.spread) {
       return null
     }
 
     // Skip spread token
-    next()
+    this.next()
 
-    const identifier = parseIdentifier()
+    const identifier = this.parseIdentifier()
 
     if (!identifier) {
-      throwUnexpectedIdentifier()
+      this.throwUnexpectedIdentifier()
     }
 
     return {
       type: AstNodeType.Spread,
       identifier,
       location: {
-        start: clone(spreadToken.location.start),
-        end: clone(identifier.location.end)
+        start: shallowClone(spreadToken.location.start),
+        end: shallowClone(identifier.location.end)
       }
     }
   }
 
-  function parseTransform (transformer: AstIdentifierNode): AstIdentifierNode | AstTransformNode {
-    if (!transformer || !is(TokenChar.transformToken)) {
+  parseTransform (transformer: AstIdentifierNode): AstIdentifierNode | AstTransformNode {
+    if (!transformer || !this.is(TokenChar.transformToken)) {
       return transformer
     }
 
     // Skip transform token
-    next()
+    this.next()
 
-    const value = parseValue()
+    const value = this.parseValue()
 
     if (!value) {
-      throwUnexpectedValue()
+      this.throwUnexpectedValue()
     }
 
     return {
@@ -297,21 +306,21 @@ export function parse (tokens: Token[]) {
       transformer,
       value,
       location: {
-        start: clone(transformer.location.start),
-        end: clone(value.location.end)
+        start: shallowClone(transformer.location.start),
+        end: shallowClone(value.location.end)
       }
     }
   }
 
-  function parseIdentifier (): AstIdentifierNode {
-    const identifier = current()
+  parseIdentifier (): AstIdentifierNode {
+    const identifier = this.current()
 
     if (identifier.type !== TokenType.identifier) {
       return null
     }
 
     // Advance to next token
-    next()
+    this.next()
 
     return {
       type: AstNodeType.Identifier,
@@ -320,81 +329,73 @@ export function parse (tokens: Token[]) {
     }
   }
 
-  function parseValue (): AstValueNode {
+  parseValue (): AstValueNode {
     return (
-      parseArray() ??
-      parseObject() ??
-      parseTransform(parseIdentifier())
+      this.parseArray() ??
+      this.parseObject() ??
+      this.parseTransform(this.parseIdentifier())
     )
   }
 
-  function expect (token: TokenChar) {
-    if (current().type === TokenType.EOF) {
+  expect (token: TokenChar) {
+    if (this.current().type === TokenType.EOF) {
       throw new ParserError('Unexpected EOF')
     }
 
-    if (!is(token)) {
-      throwUnexpected([
+    if (!this.is(token)) {
+      this.throwUnexpected([
         token
       ])
     }
   }
 
-  function throwUnexpectedIdentifier () {
-    throwUnexpected([
+  throwUnexpectedIdentifier () {
+    this.throwUnexpected([
       TokenType.identifier
     ])
   }
 
-  function throwUnexpectedValue () {
-    throwUnexpected([
+  throwUnexpectedValue () {
+    this.throwUnexpected([
       TokenChar.arrayStartToken,
       TokenChar.objectStartToken,
       TokenType.identifier
     ])
   }
 
-  function throwUnexpected (expected: string[]) {
-    const token = current()
+  throwUnexpected (expected: string[]) {
+    const token = this.current()
 
-    throwWithCodeFrame(
+    this.throwWithCodeFrame(
       `Unexpected ${token.type === TokenType.EOF ? 'EOF' : `token: ${token.value}`}. Expecting ${expected.join(', ')}`
     )
   }
 
-  function throwWithCodeFrame (message: string) {
+  throwWithCodeFrame (message: string) {
     throw new ParserError(
       [
         null,
-        `${generateCodeframe(tokens, index)}`,
+        `${generateCodeframe(this.tokens, this.index)}`,
         message
       ].join('\n\n')
     )
   }
 
-  function clone<T extends object> (obj: T): T {
-    return { ...obj }
+  is (value: string) {
+    return this.current().value === value
   }
 
-  function deepClone<T extends object> (obj: T): T {
-    return JSON.parse(
-      JSON.stringify(
-        obj
-      )
-    )
+  current () {
+    return this.tokens[this.index]
   }
 
-  function is (value: string) {
-    return current().value === value
-  }
+  next () {
+    ++this.index
 
-  function current () {
-    return tokens[index]
+    return this.current()
   }
+}
 
-  function next () {
-    ++index
-
-    return current()
-  }
+export function parse (tokens: Token[]) {
+  return new Parser(tokens).parse()
 }
