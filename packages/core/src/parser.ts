@@ -74,7 +74,7 @@ export type AstValueNode = AstObjectOrArrayNode | AstIdentifierNode | AstTransfo
 
 const TRIM_IDENTIFIER_REGEX = new RegExp(`^${TokenChar.identifierToken}|${TokenChar.identifierToken}$`, 'g')
 
-class ParserError extends Error {
+export class ParserError extends Error {
   name = 'ParserError'
 }
 
