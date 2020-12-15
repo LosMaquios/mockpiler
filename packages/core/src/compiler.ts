@@ -21,14 +21,13 @@ import {
 import { TransformFn } from './transformer'
 
 export type CompileMockArgs = Parameters<typeof String['raw']>
+export type CompileMockFn = (...args: CompileMockArgs) => any
 
 export class CompilerError extends Error {
   name = 'CompilerError'
 }
 
 const EMPTY_CONTEXT = Object.create(null)
-
-export type CompileMockFn = (...args: CompileMockArgs) => any
 
 export function createCompiler (contextOrAccessor: MockContextInput): CompileMockFn
 export function createCompiler (...args: Parameters<CompileMockFn>): ReturnType<CompileMockFn>
@@ -58,18 +57,15 @@ export function createCompiler (input: MockContextInput | TemplateStringsArray, 
 
 export class Compiler {
   constructor (
-    public input: string,
+    public rootNode: AstRootNode,
     public context: MockContext
   ) {}
 
   compile () {
-    const tokens = scan(this.input)
-    const rootNode = parse(tokens)
-
-    return this.compileRoot(rootNode)
+    return this.compileRoot(this.rootNode)
   }
 
-  compileRoot<T extends AstRootNode> ({ value }: T): any {
+  compileRoot ({ value }: AstRootNode): any {
     return value.type === AstNodeType.Array
       ? this.compileArray(value)
       : this.compileObject(value)
@@ -90,11 +86,9 @@ export class Compiler {
   }
 
   compileElementSpread (node: AstSpreadNode, parent: any[]) {
-    const result = this.compileIdent(node.identifier)
-
-    for (const value of result) {
-      parent.push(value)
-    }
+    parent.push(
+      ...this.compileIdent(node.identifier)
+    )
   }
 
   compileElement (node: AstElementNode, parent: any[]) {
@@ -172,5 +166,8 @@ export class Compiler {
 }
 
 export function compileMock (input: string, context: MockContext) {
-  return new Compiler(input, context).compile()
+  const tokens = scan(input)
+  const rootNode = parse(tokens)
+
+  return new Compiler(rootNode, context).compile()
 }
