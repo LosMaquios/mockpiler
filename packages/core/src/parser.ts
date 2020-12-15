@@ -101,12 +101,18 @@ export class Parser {
       ])
     }
 
+    const eofToken = this.current()
+
+    if (eofToken.type !== TokenType.EOF) {
+      this.throwUnexpected([TokenType.EOF])
+    }
+
     return {
       type: AstNodeType.Root,
       value,
       location: {
         start: { line: 1, column: 1 },
-        end: shallowClone(this.current().location.end)
+        end: shallowClone(eofToken.location.end)
       }
     }
   }
