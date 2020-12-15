@@ -1,10 +1,9 @@
-export type MockContextInput = MockContext | MockContextAccessor
-
+export type MockContextAccessor = (key: string) => any
 export interface MockContext {
   [key: string]: any
 }
 
-export type MockContextAccessor = (key: string) => any
+export type MockContextInput = MockContext | MockContextAccessor
 
 export const unknownIdent = Symbol('MockPiler.UnknownIdent')
 

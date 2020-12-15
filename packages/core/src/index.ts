@@ -11,25 +11,19 @@ export * from './lexer'
 /**
  * Compiler related
  */
-export { 
-  createCompiler as default,
-  createCompiler,
-  CompilerError
-} from './compiler'
+export * from './compiler'
 
 /**
  * Context related
  */
-export {
-  MockContext,
-  MockContextAccessor,
-  raw,
-  unknownIdent,
-  getContextAccessor,
-  mergeContexts
-} from './context'
+export * from './context'
 
 /**
  * Transformer related
  */
 export * from './transformer'
+
+/**
+ * Main export
+ */
+export { createCompiler as default } from './compiler'
