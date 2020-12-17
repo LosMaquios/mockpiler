@@ -120,9 +120,7 @@ export class Compiler {
   compilePropertySpread (node: AstSpreadNode, parent: object) {
     const result = this.compileIdent(node.identifier)
 
-    for (const key of Object.keys(result)) {
-      parent[key] = result[key]
-    }
+    Object.assign(parent, result)
   }
 
   compileValue (node: AstValueNode) {
