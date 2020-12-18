@@ -158,7 +158,7 @@ export class Lexer {
     }
   }
 
-  consumeToken (type: TokenType): Token {
+  scanToken (type: TokenType): Token {
     return {
       type,
       value: this.peek(),
@@ -169,7 +169,7 @@ export class Lexer {
     }
   }
 
-  consumeSpread (): Token {
+  scanSpread (): Token {
     const startLocation = this.getLocation()
 
     // Skip spread chars
@@ -185,7 +185,7 @@ export class Lexer {
     }
   }
 
-  consumeIdent (): Token {
+  scanIdent (): Token {
     let ident = this.peek() // Save leading identifier token
     let escaping = false
 
@@ -223,7 +223,7 @@ export class Lexer {
     }
   }
 
-  consumeRegex (type: TokenType, regex: RegExp): Token {
+  scanRegex (type: TokenType, regex: RegExp): Token {
     let value = this.peek()
     const start = this.getLocation()
 
@@ -251,7 +251,7 @@ export class Lexer {
 
     while (this.index < length) {
       if (this.is(ARRAY_TOKENS)) {
-        tokens.push(this.consumeToken(TokenType.array))
+        tokens.push(this.scanToken(TokenType.array))
       } else if (this.is(TokenChar.spreadToken)) {
         if (
           !this.is(TokenChar.spreadToken, 1) ||
@@ -260,22 +260,22 @@ export class Lexer {
           this.throwUnexpected()
         }
 
-        tokens.push(this.consumeSpread())
+        tokens.push(this.scanSpread())
       } else if (this.is(TokenChar.transformToken)) {
-        tokens.push(this.consumeToken(TokenType.transform))
+        tokens.push(this.scanToken(TokenType.transform))
       } else if (this.is(OBJECT_TOKENS)) {
-        tokens.push(this.consumeToken(TokenType.object))
+        tokens.push(this.scanToken(TokenType.object))
       } else if (this.is(COUNT_TOKENS)) {
-        tokens.push(this.consumeToken(TokenType.count))
+        tokens.push(this.scanToken(TokenType.count))
       } else if (this.is(COUNT_DIGIT_REGEX)) {
-        const token = this.consumeRegex(TokenType.countNumber, COUNT_DIGIT_REGEX)
+        const token = this.scanRegex(TokenType.countNumber, COUNT_DIGIT_REGEX)
         token.value = parseInt(token.value as string)
 
         tokens.push(token)
       } else if (this.is(TokenChar.identifierToken)) {
-        tokens.push(this.consumeIdent())
+        tokens.push(this.scanIdent())
       } else if (this.is(START_IDENTIFIER_REGEX)) {
-        tokens.push(this.consumeRegex(TokenType.identifier, IDENTIFIER_REGEX))
+        tokens.push(this.scanRegex(TokenType.identifier, IDENTIFIER_REGEX))
       } else if (this.is(LINE_CHAR)) {
         ++this.line
         ++this.index
