@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "faker": "^5.0.0",
-    "@mockpiler/core": "^0.2.0"
+    "@mockpiler/core": "^0.2.1"
   },
   "devDependencies": {
     "@types/faker": "^4.1.12"
