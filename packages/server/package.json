@@ -12,7 +12,7 @@
     "serve": "yarn build && node ./dist/index.js"
   },
   "dependencies": {
-    "@mockpiler/core": "^0.1.0",
+    "@mockpiler/core": "^0.2.0",
     "lru-cache": "^6.0.0",
     "ms": "^2.1.2"
   },
